@@ -82,10 +82,16 @@ instructions: |
      - Define train/val/test splits
      - Specify offline evaluation protocol (use `src/ml_engine/simulation/`)
      - Define statistical significance thresholds
-  3. **Prototype Implementation** (TDD):
-     - Write tests FIRST for the ML component behavior
-     - Implement minimal prototype
+  3. **Prototype Implementation** (TDD — MANDATORY, delegate to **tdd-workflow** subrecipe):
+     - **RED**: Write tests FIRST for the ML component behavior:
+       - Test model forward pass produces correct output shapes
+       - Test loss function computes expected values on known inputs
+       - Test gradient flow (no dead gradients)
+       - Test edge cases: empty batch, single sample, missing features
+     - **GREEN**: Implement minimal prototype to make all tests pass
+     - **REFACTOR**: Clean up while keeping tests green
      - Use existing patterns from `src/ml_engine/` (don't reinvent the wheel)
+     - **Rule**: NEVER push a prototype without passing tests
   4. **Python Best Practices**:
      - Type hints on ALL functions (use `torch.Tensor` for tensor types)
      - Docstrings with Args/Returns/Raises
@@ -108,11 +114,15 @@ instructions: |
      - Add to `src/ml_engine/safety/` if needed
      - Implement fallback strategies (e.g., rule-based when model uncertain)
      - Ensure recommendations are safe (no harmful exercise suggestions)
-  4. **Testing** (mandatory):
+  4. **Testing** (TDD — MANDATORY, delegate to **tdd-workflow** subrecipe):
+     Write ALL tests FIRST before implementing each component:
+     - **RED**: Write failing tests → **GREEN**: Implement to pass → **REFACTOR**: Clean up
      - Unit tests for model components (forward pass, loss computation)
      - Integration tests for the full pipeline
-     - Regression tests with known good outputs
-     - Performance benchmarks (latency, memory)
+     - Regression tests with known good outputs (golden tests)
+     - Performance benchmarks (latency < 200ms, memory < 512MB)
+     - Safety tests (no harmful exercise recommendations)
+     - **Rule**: No component is "done" without all corresponding tests passing
 
   ### Phase: EVALUATE
   1. **Offline Evaluation**:
@@ -178,6 +188,13 @@ sub_recipes:
   - name: "solution_architect"
     path: "./solution-architect.yaml"
     description: "Delegate system design when ML solution needs backend/mobile integration"
+
+retry:
+  max_retries: 2
+  checks:
+    - type: shell
+      command: "echo 'Verifying: all ML tests pass + TDD compliance'"
+  on_failure: "echo 'ML tests failing — reviewing implementation against test requirements'"
 
 settings:
   temperature: 0.4

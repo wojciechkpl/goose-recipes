@@ -267,14 +267,22 @@ instructions: |
   #### Go
   **.golangci.yml**: Enable govet, golint, errcheck, staticcheck, gosec
 
-  ### Step 3: Setup Testing
+  ### Step 3: Setup Testing (TDD — MANDATORY)
 
-  Create initial test infrastructure:
+  Create test infrastructure BEFORE writing any application code (delegate to **tdd-generic** subrecipe):
   1. Test configuration file (conftest.py, setup.ts, etc.)
   2. Shared test fixtures/helpers
-  3. Example unit test for the entry point
-  4. Example integration test (if applicable)
-  5. Test coverage configuration (minimum 80% for production)
+  3. **Write a failing test for the entry point FIRST** (RED):
+     - The test should import the main module and verify basic functionality
+     - This test will fail because the application code doesn't exist yet — that's correct
+  4. **Implement the minimal entry point** to make the test pass (GREEN)
+  5. Example integration test (if applicable) — write test FIRST, then implement
+  6. Test coverage configuration:
+     - Minimum 80% line coverage for production projects
+     - Coverage check in CI pipeline (fail build if below threshold)
+     - Coverage reports generated on every test run
+  7. **Rule**: The project's first commit should include BOTH test infrastructure AND passing tests.
+     No "we'll add tests later" — TDD starts at project inception.
 
   ### Step 4: Setup CI/CD (if extras != minimal)
 
@@ -328,13 +336,14 @@ instructions: |
   - Architecture overview
   - Contributing guidelines
 
-  ### Step 8: Initialize & Validate
+  ### Step 8: Initialize & Validate (TDD Gate)
   1. Initialize git repository
   2. Install dependencies
   3. Run linter → clean
-  4. Run tests → pass
-  5. Build → succeeds
-  6. Create initial commit
+  4. **Run tests → ALL pass** (if ANY test fails, do NOT proceed)
+  5. **Verify test coverage ≥ 80%** (for non-minimal projects)
+  6. Build → succeeds
+  7. Create initial commit — must include test files alongside source code
 
   ## Output
   After bootstrapping:
@@ -349,7 +358,7 @@ activities:
   - "message: **Project Bootstrapper** creating production-ready project scaffold..."
   - "Creating directory structure for {{ language }} {{ project_type }}"
   - "Configuring toolchain (linter, formatter, type checker)"
-  - "Setting up test infrastructure"
+  - "Writing initial tests FIRST (TDD — test infrastructure before app code)"
   - "Configuring CI/CD pipeline"
   - "Creating Docker configuration"
   - "Generating documentation templates"
@@ -374,6 +383,13 @@ sub_recipes:
   - name: "git_best_practices"
     path: "./subrecipes/git-best-practices.yaml"
     description: "Setup git hooks and conventions"
+
+retry:
+  max_retries: 2
+  checks:
+    - type: shell
+      command: "echo 'Verifying: scaffolded project has passing tests + linter clean + builds'"
+  on_failure: "echo 'Bootstrap validation failed — fixing test or build issues'"
 
 settings:
   temperature: 0.2

@@ -79,6 +79,17 @@ instructions: |
   - **Mock abuse**: Over-mocking that makes tests meaningless
   - **Flaky indicators**: Time-dependent tests, order-dependent tests, shared mutable state
 
+  ### Step 6: TDD Compliance Verification
+  - **Test-first evidence**: Were tests written BEFORE implementation? Check git history — test commits should precede or accompany implementation commits, never come after.
+  - **Red-Green-Refactor**: Look for signs of proper TDD cycle:
+    - Tests are specific and name the behavior they verify (not `test_1`, `test_2`)
+    - Implementation is minimal (no speculative features beyond what tests require)
+    - Test assertions match the public API contract, not internal implementation
+  - **Coverage gaps**: If new code has no corresponding test, flag as 🔴 Critical:
+    - "New code at [file:line] has no test coverage. Write tests FIRST using the **tdd-generic** subrecipe before proceeding."
+  - **Test-to-code ratio**: Flag if test LOC is < 50% of implementation LOC for non-trivial code
+  - **Regression tests**: Every bug fix MUST include a regression test that would have caught the bug
+
   ## Language-Specific Checks
 
   ### Python
@@ -156,6 +167,12 @@ instructions: |
 
   ## Test Coverage Assessment
   [What's tested, what's missing, recommendations]
+
+  ## TDD Compliance
+  - [ ] Tests written before implementation (check git history)
+  - [ ] Every new code path has a corresponding test
+  - [ ] Bug fixes include regression tests
+  - [ ] Test names describe behavior, not implementation
   ```
 
 prompt: "Review code at: {{ target_path }}"
@@ -166,7 +183,7 @@ activities:
   - "Analyzing code for correctness and logic issues"
   - "Checking for security vulnerabilities"
   - "Evaluating performance and maintainability"
-  - "Assessing test coverage"
+  - "Assessing test coverage and TDD compliance"
 
 extensions:
   - type: builtin
@@ -183,6 +200,17 @@ sub_recipes:
   - name: "static_analysis"
     path: "./subrecipes/static-analysis.yaml"
     description: "Run automated analysis tools to supplement manual review"
+
+  - name: "tdd_generic"
+    path: "./subrecipes/tdd-generic.yaml"
+    description: "Delegate to TDD workflow when missing tests are found during review"
+
+retry:
+  max_retries: 1
+  checks:
+    - type: shell
+      command: "echo 'Verifying: code review complete with TDD compliance check'"
+  on_failure: "echo 'Review incomplete — ensuring TDD compliance section is addressed'"
 
 settings:
   temperature: 0.3

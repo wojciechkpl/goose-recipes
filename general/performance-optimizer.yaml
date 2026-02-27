@@ -158,19 +158,23 @@ instructions: |
   | Layout thrashing | Forced sync layout | Batch DOM reads/writes |
   | Large lists | Rendering 1000+ items | Virtualization (ListView.builder) |
 
-  ### Phase 3: OPTIMIZE — Apply Targeted Fixes
-  For each identified bottleneck:
-  1. Write a benchmark test that captures current performance
-  2. Apply the optimization
-  3. Re-run the benchmark to prove improvement
-  4. Run the full test suite to ensure no regressions
+  ### Phase 3: OPTIMIZE — Apply Targeted Fixes (TDD — MANDATORY)
+  For each identified bottleneck, follow strict TDD cycle (delegate to **tdd-generic** subrecipe):
+  1. **RED**: Write a benchmark test FIRST that captures current performance with assertion:
+     - Test asserts metric < target threshold (will fail because current perf doesn't meet target)
+     - Include a regression test that verifies correctness (not just speed)
+  2. **GREEN**: Apply the optimization — make both the benchmark and correctness tests pass
+  3. **REFACTOR**: Clean up the optimization while keeping ALL tests green
+  4. Re-run the full test suite to ensure no regressions
 
   **Rules**:
   - ONE optimization at a time (isolate impact)
-  - Always preserve correctness (use **tdd-generic** subrecipe)
+  - **Write benchmark test FIRST** — NEVER optimize without a measurable test
+  - Always preserve correctness — correctness test MUST pass alongside performance test
   - Document the optimization with a comment explaining WHY
-  - Keep the benchmark test in the codebase
+  - Keep the benchmark test in the codebase (it prevents performance regressions)
   - If improvement < 5%, consider reverting (complexity cost)
+  - **NEVER mark an optimization as done without both benchmark + regression tests passing**
 
   ### Phase 4: VALIDATE — Verify Improvements
   1. Re-run ALL baseline measurements from Phase 1
@@ -239,6 +243,13 @@ sub_recipes:
   - name: "static_analysis"
     path: "./subrecipes/static-analysis.yaml"
     description: "Ensure optimizations don't introduce code quality issues"
+
+retry:
+  max_retries: 2
+  checks:
+    - type: shell
+      command: "echo 'Verifying: benchmark tests pass + no correctness regressions'"
+  on_failure: "echo 'Performance tests or regression tests failing — reviewing optimizations'"
 
 settings:
   temperature: 0.2

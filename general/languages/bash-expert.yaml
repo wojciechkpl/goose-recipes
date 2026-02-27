@@ -526,20 +526,25 @@ instructions: |
 
   ## TASK-SPECIFIC WORKFLOWS
 
-  ### write_script
+  ### write_script (TDD — MANDATORY)
   1. Start with header template (shebang, description, usage, safety)
-  2. Write tests FIRST with bats-core
-  3. Implement functions bottom-up
-  4. Run ShellCheck: `shellcheck -x "${script}"`
-  5. Test on target environment
+  2. **Write tests FIRST with bats-core** (delegate to **tdd-generic** subrecipe with `language: bash`):
+     - RED: Write `test/<script_name>.bats` with failing tests for each function
+     - GREEN: Implement functions bottom-up to make tests pass
+     - REFACTOR: Improve without breaking tests
+  3. Run ShellCheck: `shellcheck -x "${script}"`
+  4. Run bats tests: `bats test/`
+  5. Verify both ShellCheck AND bats pass before considering done
 
-  ### refactor
-  1. Run ShellCheck — fix all warnings first
-  2. Extract repeated code into functions
-  3. Add `local` to all function variables
-  4. Replace `[ ]` with `[[ ]]`
-  5. Add proper error handling and cleanup
-  6. Run tests after each change
+  ### refactor (TDD — MANDATORY)
+  1. **Ensure existing tests pass** before any refactoring changes
+  2. Run ShellCheck — fix all warnings first
+  3. Write characterization tests for untested functions FIRST
+  4. Extract repeated code into functions — run tests after each extraction
+  5. Add `local` to all function variables — run tests
+  6. Replace `[ ]` with `[[ ]]` — run tests
+  7. Add proper error handling and cleanup — run tests
+  8. **Rule: Never proceed to next refactoring step until current tests are green**
 
   ### review
   1. Check for safety: `set -euo pipefail` present?
@@ -561,6 +566,14 @@ instructions: |
   3. Add timeouts on all long operations
   4. Use CI platform logging conventions
   5. Test locally with act/nektos (for GitHub Actions)
+
+  ### test (TDD — MANDATORY)
+  1. Analyze current test coverage: list functions without corresponding bats tests
+  2. Write missing tests using bats-core in `test/<script_name>.bats`
+  3. Follow AAA pattern: Arrange (setup), Act (run), Assert (assert_success/assert_output)
+  4. Test: argument validation, error conditions, happy paths, edge cases
+  5. Mock external commands with exported functions to isolate unit tests
+  6. Target: every public function has at least one positive and one negative test
 
   ## MODULARITY RULES
   - Max 200 lines per script (extract common functions to library files)
@@ -594,6 +607,10 @@ extensions:
     bundled: true
 
 sub_recipes:
+  - name: "tdd_generic"
+    path: "../subrecipes/tdd-generic.yaml"
+    description: "TDD workflow for Bash scripts (bats-core tests FIRST)"
+
   - name: "static_analysis"
     path: "../subrecipes/static-analysis.yaml"
     description: "Run ShellCheck + bats-core"
@@ -607,11 +624,11 @@ sub_recipes:
     description: "Security audit for shell scripts"
 
 retry:
-  max_retries: 1
+  max_retries: 2
   checks:
     - type: shell
-      command: "echo 'Verifying: ShellCheck clean + bats tests pass'"
-  on_failure: "echo 'Quality checks failed — reviewing issues'"
+      command: "echo 'Verifying: ShellCheck clean + bats tests pass + TDD compliance'"
+  on_failure: "echo 'Quality checks failed — ensuring tests written FIRST and all pass'"
 
 settings:
   temperature: 0.2

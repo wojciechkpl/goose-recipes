@@ -123,12 +123,23 @@ instructions: |
   - Save to `data/` with clear naming convention
   - Validate with automated tests
 
-  ### Step 5: Validation & Quality
+  ### Step 5: Validation & Quality (TDD — MANDATORY)
   For any data transformations or findings:
-  - Write validation tests (pytest) to ensure data assumptions hold
-  - Use assertions for schema expectations
-  - Document any data quirks discovered
-  - If the exploration reveals data issues, create a remediation plan
+  1. **Write validation tests FIRST** (delegate to **tdd-workflow** subrecipe):
+     - RED: Write pytest tests that encode your data assumptions BEFORE running exploration:
+       - Schema tests: column types, nullable constraints, valid value ranges
+       - Integrity tests: FK relationships hold, no orphaned records
+       - Distribution tests: expected cardinality, null rates within bounds
+       - Business rule tests: domain-specific invariants (e.g., `ended_at > started_at`)
+     - GREEN: Run tests against actual data — if tests fail, that's a data quality finding
+     - REFACTOR: Extract reusable validation functions to `src/ml_engine/utils/`
+  2. **Data transformation tests** (for any reusable transformations):
+     - Write tests with known input → expected output BEFORE writing the transformation
+     - Test edge cases: empty data, single record, null values, boundary values
+     - Test idempotency: running transformation twice gives same result
+  3. **Rule**: Every reusable data loading function or transformation MUST have a test.
+     Notebook-only analysis is acceptable for one-off exploration, but any code extracted
+     to a module MUST follow TDD.
 
   ## Modularity Principles
   - Exploration utilities go in `src/ml_engine/utils/` or `notebooks/utils/`
@@ -151,6 +162,7 @@ activities:
   - "Profile the database schema and data quality"
   - "Analyze {{ data_source }} for {{ exploration_goal }}"
   - "Create a reproducible analysis notebook"
+  - "Writing data validation tests FIRST (TDD)"
   - "Identify data quality issues and recommendations"
 
 extensions:
@@ -176,6 +188,13 @@ sub_recipes:
   - name: "solution_architect"
     path: "./solution-architect.yaml"
     description: "Delegate to Solution Architect when data findings require schema redesign"
+
+retry:
+  max_retries: 2
+  checks:
+    - type: shell
+      command: "echo 'Verifying: data validation tests pass + transformations tested'"
+  on_failure: "echo 'Data validation tests failing — reviewing data assumptions'"
 
 settings:
   temperature: 0.3

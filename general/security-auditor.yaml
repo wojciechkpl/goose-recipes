@@ -158,7 +158,26 @@ instructions: |
       - Missing URL validation/allowlisting
       - Internal service URLs exposed
 
-  ### Phase 5: Infrastructure Review
+  ### Phase 5: Security Test Verification (TDD)
+  For every vulnerability found, ensure security is enforced through tests:
+  1. **Check existing security tests**: Are there tests that validate auth, input sanitization, CORS, rate limiting?
+  2. **Write security regression tests FIRST** (delegate to **tdd-generic** subrecipe):
+     - Write a test that **reproduces** the vulnerability (RED phase)
+     - Apply the fix to make the test pass (GREEN phase)
+     - Refactor if needed while keeping all tests green (REFACTOR phase)
+  3. **Security test patterns** (must exist for every finding):
+     - **Injection tests**: Send malicious payloads, verify they're rejected
+     - **Auth bypass tests**: Attempt access without credentials, verify 401/403
+     - **IDOR tests**: Attempt access to other users' resources, verify denied
+     - **Rate limit tests**: Send burst requests, verify 429 returned
+     - **Input validation tests**: Send boundary/edge-case inputs, verify handled
+  4. **Test coverage for security-critical paths**:
+     - Authentication endpoints: 100% branch coverage required
+     - Authorization middleware: 100% branch coverage required
+     - Input validation: All boundary conditions tested
+  5. **Rule**: NEVER mark a security finding as "fixed" without a corresponding regression test that would catch the vulnerability if it were reintroduced.
+
+  ### Phase 6: Infrastructure Review
   If infrastructure configs exist:
   - **Docker**: No `--privileged`, no root user, minimal base images, multi-stage builds
   - **docker-compose**: No hardcoded secrets, proper network isolation
@@ -215,6 +234,18 @@ instructions: |
   ## Compliance Checklist
   [Framework-specific checklist with pass/fail for each control]
 
+  ## Security Test Coverage
+  | Finding | Regression Test | Test File | Status |
+  |---------|----------------|-----------|--------|
+  | [Finding ID] | [test name] | [path] | ✅/❌ |
+
+  ## TDD Compliance
+  - [ ] Every critical/high finding has a regression test
+  - [ ] Security tests written BEFORE fixes (Red-Green-Refactor)
+  - [ ] Auth endpoints have 100% branch coverage
+  - [ ] Input validation has boundary condition tests
+  - [ ] All security tests pass
+
   ## Recommendations (Priority Order)
   1. [Most critical action]
   2. [Second most critical]
@@ -230,6 +261,7 @@ activities:
   - "Running dependency vulnerability scanners"
   - "Reviewing code against OWASP Top 10"
   - "Checking infrastructure configurations"
+  - "Writing security regression tests (TDD)"
   - "Generating security report"
 
 extensions:
@@ -247,6 +279,17 @@ sub_recipes:
   - name: "static_analysis"
     path: "./subrecipes/static-analysis.yaml"
     description: "Run static analysis tools for security-related findings"
+
+  - name: "tdd_generic"
+    path: "./subrecipes/tdd-generic.yaml"
+    description: "Write security regression tests using Red-Green-Refactor cycle"
+
+retry:
+  max_retries: 2
+  checks:
+    - type: shell
+      command: "echo 'Verifying: security regression tests written and passing'"
+  on_failure: "echo 'Security tests incomplete — ensuring every finding has a regression test'"
 
 settings:
   temperature: 0.2

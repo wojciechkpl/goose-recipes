@@ -457,50 +457,83 @@ instructions: |
 
   ## TASK-SPECIFIC WORKFLOWS
 
-  ### design_schema
+  ### design_schema (TDD — MANDATORY)
   1. Understand the domain and entities
-  2. Apply normalization (3NF minimum)
-  3. Choose appropriate data types
-  4. Add constraints (PK, FK, UNIQUE, CHECK, NOT NULL)
-  5. Design indexes for known query patterns
-  6. Add audit columns (created_at, updated_at)
-  7. Document with comments: `COMMENT ON TABLE users IS 'Registered users';`
+  2. **Write schema validation tests FIRST** (delegate to **tdd-generic** subrecipe):
+     - RED: Write tests that validate table structures, constraints, and relationships
+     - Test that NOT NULL constraints are enforced
+     - Test that CHECK constraints reject invalid data
+     - Test that FK constraints enforce referential integrity
+     - Test that unique constraints prevent duplicates
+  3. Apply normalization (3NF minimum)
+  4. Choose appropriate data types
+  5. Add constraints (PK, FK, UNIQUE, CHECK, NOT NULL)
+  6. Design indexes for known query patterns
+  7. Add audit columns (created_at, updated_at)
+  8. Document with comments: `COMMENT ON TABLE users IS 'Registered users';`
+  9. GREEN: Run tests — all constraints validated
+  10. REFACTOR: Optimize index placement while keeping tests green
 
-  ### optimize_query
-  1. Get the query and its EXPLAIN ANALYZE output
-  2. Identify the bottleneck (seq scan, sort, join type)
-  3. Propose index or query rewrite
-  4. Verify with EXPLAIN ANALYZE showing improvement
-  5. Check for side effects on write performance
+  ### optimize_query (TDD — MANDATORY)
+  1. **Write a performance benchmark test FIRST**:
+     - Capture current EXPLAIN ANALYZE output as baseline
+     - Define target latency threshold (test asserts query time < threshold)
+  2. Get the query and its EXPLAIN ANALYZE output
+  3. Identify the bottleneck (seq scan, sort, join type)
+  4. Propose index or query rewrite
+  5. Verify with EXPLAIN ANALYZE showing improvement
+  6. **Run benchmark test** — assert improvement meets target
+  7. Run full test suite — ensure no regressions
 
-  ### write_migration
+  ### write_migration (TDD — MANDATORY)
   1. Design the schema change
-  2. Write UP migration (with safety practices above)
-  3. Write DOWN/rollback migration
-  4. Test on copy of production data
-  5. Estimate lock time for production
+  2. **Write migration tests FIRST**:
+     - RED: Write test that validates the schema after UP migration
+     - Write test that validates the schema after DOWN migration (rollback works)
+     - Write test that validates data integrity during migration
+  3. Write UP migration (with safety practices above)
+  4. Write DOWN/rollback migration
+  5. GREEN: Run migration tests — both UP and DOWN pass
+  6. Test on copy of production data
+  7. Estimate lock time for production
 
-  ### security_audit
+  ### review (TDD — MANDATORY)
+  1. Check that every table has corresponding test coverage
+  2. Verify that constraint tests exist for all CHECK, FK, UNIQUE constraints
+  3. Flag any queries without test coverage as 🔴 Critical
+  4. Verify migration tests exist for every migration
+
+  ### security_audit (TDD — MANDATORY)
   1. Review roles and permissions (least privilege?)
   2. Check for RLS on multi-tenant tables
   3. Verify parameterized queries (no SQL injection)
-  4. Check for sensitive data exposure in logs
-  5. Verify SSL/TLS configuration
-  6. Audit with pg_stat_statements
+  4. **Write security tests for each finding**:
+     - Test that RLS prevents cross-tenant access
+     - Test that parameterized queries reject injection attempts
+     - Test that roles have minimum necessary permissions
+  5. Check for sensitive data exposure in logs
+  6. Verify SSL/TLS configuration
+  7. Audit with pg_stat_statements
 
-  ### performance_tune
-  1. Check pg_stat_statements for slow queries
-  2. Review index usage (unused indexes, missing indexes)
-  3. Check autovacuum configuration and dead tuple counts
-  4. Review connection pool settings
-  5. Tune configuration parameters for hardware
+  ### performance_tune (TDD — MANDATORY)
+  1. **Write performance benchmark tests FIRST** with target thresholds
+  2. Check pg_stat_statements for slow queries
+  3. Review index usage (unused indexes, missing indexes)
+  4. Apply optimizations — run benchmark tests after each change
+  5. Check autovacuum configuration and dead tuple counts
+  6. Review connection pool settings
+  7. Tune configuration parameters for hardware
+  8. **Verify all benchmark tests pass with improved metrics**
 
-  ### debug_query
-  1. Get EXPLAIN (ANALYZE, BUFFERS, VERBOSE) output
-  2. Check statistics: `SELECT * FROM pg_stats WHERE tablename = 'X';`
-  3. Check for lock contention
-  4. Check for stale statistics → run ANALYZE
-  5. Check for bloat → run VACUUM
+  ### debug_query (TDD — MANDATORY)
+  1. **Write a test that reproduces the problematic query behavior** (RED)
+  2. Get EXPLAIN (ANALYZE, BUFFERS, VERBOSE) output
+  3. Check statistics: `SELECT * FROM pg_stats WHERE tablename = 'X';`
+  4. Check for lock contention
+  5. Check for stale statistics → run ANALYZE
+  6. Check for bloat → run VACUUM
+  7. Apply fix — test passes (GREEN)
+  8. Run full test suite — no regressions
 
   ## MODULARITY RULES
   - Each migration file handles ONE logical change
@@ -526,6 +559,10 @@ extensions:
     bundled: true
 
 sub_recipes:
+  - name: "tdd_generic"
+    path: "../subrecipes/tdd-generic.yaml"
+    description: "TDD workflow for database tests (schema, migration, query validation)"
+
   - name: "security_auditor"
     path: "../security-auditor.yaml"
     description: "Security audit for database configurations"
@@ -539,11 +576,11 @@ sub_recipes:
     description: "SQL-focused code review"
 
 retry:
-  max_retries: 1
+  max_retries: 2
   checks:
     - type: shell
-      command: "echo 'Verifying SQL syntax and migration safety'"
-  on_failure: "echo 'Issues found — reviewing'"
+      command: "echo 'Verifying: SQL syntax + migration tests pass + schema validation tests pass'"
+  on_failure: "echo 'Database tests failing — fixing schema/migration/query issues'"
 
 settings:
   temperature: 0.2

@@ -110,18 +110,19 @@ instructions: |
   - Keep a log of what you tested and what happened
   - If stuck after 3 hypotheses, widen the search scope
 
-  ### Phase 4: FIX — Apply Minimal Correction
-  1. **Minimal fix**: Change the fewest lines possible to fix the root cause.
-  2. **No drive-by fixes**: Don't refactor, clean up, or "improve" unrelated code.
-  3. **Write a regression test** that:
-     - Fails before the fix (confirms the fix is necessary)
-     - Passes after the fix (confirms the fix works)
-     - Tests the specific edge case that caused the bug
-
-  Use the **tdd-generic** subrecipe:
-  - RED: Write a test that reproduces the bug
-  - GREEN: Apply the minimal fix
-  - REFACTOR: (only if the fix introduced duplication)
+  ### Phase 4: FIX — Apply Minimal Correction (TDD — MANDATORY)
+  1. **Write a regression test FIRST** (delegate to **tdd-generic** subrecipe — NO EXCEPTIONS):
+     - **RED**: Write a test that **reproduces the bug exactly**:
+       - The test MUST fail with the same symptom as the reported bug
+       - If you can't reproduce it in a test, you don't understand the bug yet → go back to Phase 2
+       - Use the exact input/conditions that trigger the bug
+     - **GREEN**: Apply the **minimal fix** — change the fewest lines possible to make the test pass:
+       - ONLY fix the root cause, not symptoms
+       - No drive-by fixes: don't refactor, clean up, or "improve" unrelated code
+     - **REFACTOR**: (only if the fix introduced duplication — keep tests green)
+  2. **NEVER skip the regression test**: A fix without a test is just a prayer that the bug won't come back.
+  3. **Verify the regression test would have caught the bug**: If the test passes before your fix,
+     the test isn't testing the right thing — revise it.
 
   ### Phase 5: VERIFY — Confirm Complete Fix
   1. Run the specific failing test → passes
@@ -205,6 +206,8 @@ instructions: |
   - ❌ "Blame the framework/library without evidence"
   - ❌ "Fix the symptom without understanding the cause"
   - ❌ "Skip writing a regression test"
+  - ❌ "Write the fix first and test after" (violates TDD — always RED before GREEN)
+  - ❌ "Mark a fix as done without running the full test suite"
 
   ## Output Format
   ```
@@ -241,8 +244,9 @@ activities:
   - "Reproducing the bug and gathering evidence"
   - "Forming and ranking hypotheses"
   - "Testing hypotheses systematically"
-  - "Applying minimal fix with regression test"
-  - "Verifying complete resolution"
+  - "Writing regression test FIRST that reproduces the bug (TDD RED phase)"
+  - "Applying minimal fix to make test pass (TDD GREEN phase)"
+  - "Verifying complete resolution — full test suite passes"
 
 extensions:
   - type: builtin
@@ -263,6 +267,13 @@ sub_recipes:
   - name: "static_analysis"
     path: "./subrecipes/static-analysis.yaml"
     description: "Run analysis to catch related issues"
+
+retry:
+  max_retries: 2
+  checks:
+    - type: shell
+      command: "echo 'Verifying: regression test written + all tests pass + bug resolved'"
+  on_failure: "echo 'Fix incomplete — ensuring regression test exists and all tests pass'"
 
 settings:
   temperature: 0.2

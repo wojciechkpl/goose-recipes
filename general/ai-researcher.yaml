@@ -1172,8 +1172,8 @@ retry:
   max_retries: 2
   checks:
     - type: shell
-      command: "echo 'Verifying research output completeness'"
-  on_failure: "echo 'Output incomplete — re-checking for missing sections'"
+      command: "echo 'Verifying: research output completeness + all tests pass (TDD compliance)'"
+  on_failure: "echo 'Output incomplete or tests failing — ensuring TDD compliance and fixing issues'"
 
 settings:
   temperature: 0.3

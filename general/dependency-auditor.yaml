@@ -116,6 +116,13 @@ instructions: |
 
   5. Order: security fixes → patch → minor → major
 
+  **TDD requirement for updates**:
+  Before applying ANY dependency update, follow the TDD cycle:
+  1. **RED**: Run the existing test suite — ensure all tests pass BEFORE the update (baseline)
+  2. **GREEN**: Apply the update, run tests — if tests fail, the update broke something
+  3. **REFACTOR**: Fix any breaking changes while keeping tests green
+  For major version updates, write migration tests FIRST that verify the new API before changing application code.
+
   ### unused_detection
   Detect dependencies that are imported but not used, or not imported at all:
 
@@ -196,6 +203,17 @@ instructions: |
   | Package | Size | % of Total | Alternative |
   |---------|------|-----------|-------------|
 
+  ## Test Verification
+  | Update | Tests Before | Tests After | Regressions |
+  |--------|-------------|-------------|-------------|
+  | [package] | ✅ all pass | ✅/❌ | [count] |
+
+  ## TDD Compliance
+  - [ ] Full test suite passed before any updates
+  - [ ] Each update verified against existing tests
+  - [ ] Major updates have migration tests written FIRST
+  - [ ] No test regressions in final state
+
   ## Recommended Actions (Priority Order)
   1. [Action] — [Reason] — [Effort estimate]
   2. ...
@@ -209,6 +227,7 @@ activities:
   - "Running vulnerability scanners"
   - "Checking license compliance"
   - "Identifying outdated and unused dependencies"
+  - "Verifying test suite before and after updates (TDD)"
   - "Generating prioritized action plan"
 
 extensions:
@@ -222,6 +241,17 @@ sub_recipes:
   - name: "language_detection"
     path: "./subrecipes/language-detection.yaml"
     description: "Detect project stack for appropriate audit tools"
+
+  - name: "tdd_generic"
+    path: "./subrecipes/tdd-generic.yaml"
+    description: "TDD cycle for verifying dependency updates don't break functionality"
+
+retry:
+  max_retries: 2
+  checks:
+    - type: shell
+      command: "echo 'Verifying: all tests pass after dependency updates'"
+  on_failure: "echo 'Test regressions found after dependency update — rolling back'"
 
 settings:
   temperature: 0.1

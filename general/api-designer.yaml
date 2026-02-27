@@ -184,15 +184,30 @@ instructions: |
   - **Examples**: Request/response examples for each endpoint
   - **Authentication guide**: How to obtain and use credentials
 
-  ### Step 5: Implementation Plan
-  If {{ project_path }} exists:
-  1. Schema/model definitions first (contract-first)
-  2. Validation layer
-  3. Service/business logic layer
-  4. Controller/resolver/handler layer
-  5. Middleware (auth, rate limiting, logging)
-  6. Tests at each layer (use **tdd-generic** subrecipe)
-  7. Documentation generation
+  ### Step 5: Implementation Plan (TDD — MANDATORY)
+  If {{ project_path }} exists, follow **contract-first, test-first** development:
+  1. **Schema/model definitions** (contract-first design)
+  2. **Write API contract tests FIRST** (delegate to **tdd-generic** subrecipe):
+     - RED: Write tests for each endpoint BEFORE implementing:
+       - Test correct HTTP status codes (200, 201, 204, 400, 401, 403, 404, 409, 422)
+       - Test request validation (missing fields, wrong types, boundary values)
+       - Test response schema matches documented contract
+       - Test authentication/authorization requirements
+       - Test pagination (cursor, limit, edge cases)
+       - Test error response format matches RFC 7807
+     - GREEN: Implement each layer to make tests pass:
+       a. Validation layer
+       b. Service/business logic layer
+       c. Controller/resolver/handler layer
+       d. Middleware (auth, rate limiting, logging)
+     - REFACTOR: Extract shared patterns, improve without breaking tests
+  3. **Integration tests**: End-to-end request → response → database verification
+  4. **Documentation generation** — verify examples match actual API behavior (doctest)
+  5. **Rule**: NO endpoint is considered "done" without at least:
+     - 1 happy path test
+     - 1 validation error test (400)
+     - 1 auth test (401/403)
+     - 1 not-found test (404)
 
   ## Output Format
   ```
@@ -222,7 +237,14 @@ instructions: |
   [Generated specification]
 
   ## Implementation Plan
-  [Ordered task list]
+  [Ordered task list with TDD requirements per endpoint]
+
+  ## TDD Compliance
+  - [ ] Contract tests written BEFORE implementation
+  - [ ] Every endpoint has happy path + error path tests
+  - [ ] Request validation tested for all fields
+  - [ ] Auth/authz tested for every endpoint
+  - [ ] All tests pass
   ```
 
 prompt: "Design API for: {{ api_name }}"
@@ -254,6 +276,13 @@ sub_recipes:
   - name: "code_reviewer"
     path: "./code-reviewer.yaml"
     description: "Review implemented API code"
+
+retry:
+  max_retries: 2
+  checks:
+    - type: shell
+      command: "echo 'Verifying: API contract tests written and passing'"
+  on_failure: "echo 'API tests incomplete — ensuring every endpoint has contract tests'"
 
 settings:
   temperature: 0.3

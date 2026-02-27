@@ -103,11 +103,24 @@ instructions: |
   9. ML integration (if applicable)
   10. Tests at each layer
 
-  ### Step 4: TDD Integration
-  For every component in the implementation plan:
-  - Define what tests are needed BEFORE implementation
-  - Specify test fixtures and mocks required
-  - Ensure both happy-path and edge-case coverage
+  ### Step 4: TDD Integration (MANDATORY)
+  For every component in the implementation plan, enforce strict TDD:
+  1. **Write test specifications FIRST** — before any implementation code:
+     - Define the exact test file, test name, and assertion for each component
+     - Specify test fixtures and mocks required
+     - Ensure both happy-path and edge-case coverage
+  2. **Implementation order MUST be test-first**:
+     - RED: Write failing test → GREEN: Implement to pass → REFACTOR: Clean up
+     - Delegate to **tdd-workflow** subrecipe for each component
+  3. **Test requirements per layer**:
+     - Database models: constraint validation tests, relationship tests
+     - API endpoints: contract tests (status codes, request validation, auth)
+     - Services: business logic unit tests with mocked dependencies
+     - Flutter widgets: widget tests, provider tests, golden tests
+     - ML components: forward pass shape tests, loss computation tests
+  4. **Rule**: No component in the implementation plan should be listed without its
+     corresponding test requirement. If you can't define the test, you don't understand
+     the requirement well enough yet.
 
   ### Step 5: Delegation (for high complexity)
   If complexity is "high", delegate to specialized agents:
@@ -186,6 +199,13 @@ sub_recipes:
   - name: "data_exploration"
     path: "./data-exploration.yaml"
     description: "Delegate data analysis when design decisions need data backing"
+
+retry:
+  max_retries: 1
+  checks:
+    - type: shell
+      command: "echo 'Verifying: architecture design includes TDD test specifications for all components'"
+  on_failure: "echo 'TDD specifications missing — ensuring every component has test requirements'"
 
 settings:
   temperature: 0.3

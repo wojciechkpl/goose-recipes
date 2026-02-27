@@ -252,14 +252,44 @@ instructions: |
   6. **Where to find things**: Key files/modules map
   7. **Who to ask**: Team contacts (if available)
 
+  ## Test-Driven Documentation (TDD for Docs)
+  Documentation is code — treat it with the same rigor:
+
+  ### Doctest Verification
+  1. **Write executable examples FIRST** (RED): Before writing the documentation prose, write the code examples
+     that demonstrate the behavior. Run them — they should work.
+  2. **Validate against actual code** (GREEN): Every code example must be tested:
+     - **Python**: Use `doctest` or `pytest --doctest-modules` — examples in docstrings MUST be runnable
+     - **Rust**: Use `cargo test --doc` — rustdoc examples are compiled and tested
+     - **TypeScript/JavaScript**: Provide examples as runnable snippets, verify with `ts-node` or `node -e`
+     - **Dart**: Examples in `///` comments should be verifiable with `dart doc --validate-links`
+  3. **Keep docs in sync** (REFACTOR): When code changes, tests catch stale documentation:
+     - Doctest failures = documentation is lying to users → fix immediately
+     - Broken links = documentation references ghost code → update or remove
+
+  ### API Documentation Tests
+  For `api_reference` documentation:
+  1. Write a test that calls each documented endpoint with the documented request body
+  2. Assert the response matches the documented response schema
+  3. Verify documented error codes are returned for documented error conditions
+  4. These tests serve dual purpose: they validate the docs AND provide living examples
+
+  ### Test-Documentation Alignment
+  - Every public function with a docstring should have a corresponding unit test
+  - Every documented example should be a test case (or extracted from one)
+  - If a test exists but no docs exist → flag for documentation
+  - If docs exist but no test exists → flag as untested documentation
+
   ## Quality Checks
   After generating documentation:
-  - [ ] All code examples are syntactically correct
+  - [ ] All code examples are syntactically correct and runnable
+  - [ ] Doctests pass (`pytest --doctest-modules` / `cargo test --doc`)
   - [ ] No references to non-existent files, endpoints, or functions
   - [ ] Examples can be copy-pasted and run
   - [ ] Mermaid diagrams render correctly
   - [ ] Links are valid (no broken references)
   - [ ] Tone matches the audience
+  - [ ] Every example has a corresponding test
 
 prompt: "Generate {{ doc_type }} documentation for: {{ target_path }}"
 
@@ -268,6 +298,7 @@ activities:
   - "Reading code to understand structure and behavior"
   - "Generating {{ doc_type }} documentation"
   - "Validating examples and references"
+  - "Running doctests and verifying examples (TDD)"
   - "Writing documentation files"
 
 extensions:
@@ -281,6 +312,17 @@ sub_recipes:
   - name: "language_detection"
     path: "./subrecipes/language-detection.yaml"
     description: "Detect project stack to use appropriate documentation format"
+
+  - name: "tdd_generic"
+    path: "./subrecipes/tdd-generic.yaml"
+    description: "TDD cycle for writing and validating documentation examples"
+
+retry:
+  max_retries: 1
+  checks:
+    - type: shell
+      command: "echo 'Verifying: doctests pass and examples are runnable'"
+  on_failure: "echo 'Documentation examples failing — fixing code examples'"
 
 settings:
   temperature: 0.3
