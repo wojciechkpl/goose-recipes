@@ -1,205 +1,138 @@
-# Goose Recipes
+# AI Agent Recipes
 
-A collection of specialized [Goose](https://github.com/block/goose) agent recipes for software development workflows. These recipes enforce **Test-Driven Development**, **code modularity**, **Docker-based ML development**, and **language-specific best practices**.
-
-All recipes are **general-purpose** — they auto-detect your project's tech stack and adapt behavior accordingly. No project-specific hardcoding.
+A curated collection of AI agent configurations for **Goose** (by Block) and **Claude Code** (by Anthropic). Each agent enforces best practices, TDD, and language-specific conventions.
 
 ## Repository Structure
 
 ```
-goose-recipes/
-├── README.md
-├── TUTORIAL.md                           # Step-by-step usage guide with examples
+.
+├── goose/              # Goose agent recipes (YAML)
+│   ├── README.md       # Goose-specific documentation
+│   ├── TUTORIAL.md     # Step-by-step usage guide
+│   └── general/
+│       ├── *.yaml              # 10 core recipes
+│       ├── languages/*.yaml    # 5 language experts
+│       └── subrecipes/*.yaml   # 10 shared subrecipes
 │
-├── general/
-│   ├── ai-researcher.yaml                # ML Research Scientist (arXiv, citations, MLflow, Docker)
-│   ├── code-reviewer.yaml                # Comprehensive code review
-│   ├── security-auditor.yaml             # OWASP Top 10, secrets, CVEs, infrastructure
-│   ├── documentation-agent.yaml          # API docs, inline docs, READMEs, Mermaid diagrams
-│   ├── debugging-agent.yaml              # Scientific debugging: observe → hypothesize → test → fix
-│   ├── performance-optimizer.yaml        # Profile → analyze → optimize → validate
-│   ├── api-designer.yaml                 # REST/GraphQL/gRPC with OpenAPI specs
-│   ├── dependency-auditor.yaml           # Vulnerabilities, licenses, unused, size analysis
-│   ├── project-bootstrapper.yaml         # Scaffold projects with CI/CD, Docker, testing
-│   ├── ux-designer.yaml                  # UX design: wireframes, a11y, design systems, heuristics
-│   │
-│   ├── subrecipes/                       # Shared building blocks (delegated to by main recipes)
-│   │   ├── language-detection.yaml       # Auto-detect language, framework, toolchain
-│   │   ├── tdd-generic.yaml             # Red-Green-Refactor for any language
-│   │   ├── static-analysis.yaml          # Linters, formatters, type checkers
-│   │   ├── git-best-practices.yaml       # Conventional commits, PR prep, hooks
-│   │   ├── literature-review.yaml        # PRISMA-inspired systematic review
-│   │   ├── arxiv-search.yaml             # arXiv API paper search with relevance ranking
-│   │   ├── citation-graph.yaml           # Semantic Scholar citation analysis (PageRank, clusters)
-│   │   ├── mlflow-tracking.yaml          # MLflow: params, metrics, artifacts, registry, HPO
-│   │   ├── docker-ml-environment.yaml    # Containerized ML: Dockerfiles, compose, GPU, MLflow
-│   │   └── design-system.yaml           # Design tokens, component inventory, consistency checks
-│   │
-│   └── languages/                        # Language-specific deep expert agents
-│       ├── python-expert.yaml            # Python 3.10+ / pytest / type system / FastAPI / PyTorch
-│       ├── flutter-expert.yaml           # Flutter / Dart 3.x / Riverpod / go_router
-│       ├── rust-expert.yaml              # Rust / ownership / tokio / cargo
-│       ├── postgresql-expert.yaml        # PostgreSQL / schema / indexing / query optimization
-│       └── bash-expert.yaml              # Bash / shellcheck / bats-core / CI patterns
+├── claude/             # Claude Code agents (Markdown)
+│   ├── README.md       # Claude-specific documentation
+│   └── agents/
+│       ├── *.md                # 8 core agents
+│       ├── languages/*.md      # 5 language experts
+│       └── specialized/*.md    # 2 specialized agents
+│
+└── README.md           # This file
 ```
-
----
-
-## Main Agent Recipes
-
-| Recipe | File | Purpose | Temp |
-|--------|------|---------|------|
-| **AI/ML Researcher** | `general/ai-researcher.yaml` | Scientific ML research: lit review, arXiv API, citation graph, tradeoff analysis, LaTeX math, Mermaid diagrams, Docker-based experiments, MLflow tracking | 0.3 |
-| **Code Reviewer** | `general/code-reviewer.yaml` | Comprehensive code review: correctness, security, performance, maintainability | 0.3 |
-| **Security Auditor** | `general/security-auditor.yaml` | OWASP Top 10, secret detection, dependency CVEs, infrastructure review | 0.2 |
-| **Documentation Agent** | `general/documentation-agent.yaml` | API docs, inline docs, READMEs, architecture diagrams, changelogs | 0.3 |
-| **Debugging Agent** | `general/debugging-agent.yaml` | Scientific debugging: observe → hypothesize → test → fix → verify | 0.2 |
-| **Performance Optimizer** | `general/performance-optimizer.yaml` | Profile → analyze → optimize → validate (DB, API, memory, rendering) | 0.2 |
-| **API Designer** | `general/api-designer.yaml` | REST/GraphQL/gRPC design with proper HTTP semantics and OpenAPI specs | 0.3 |
-| **Dependency Auditor** | `general/dependency-auditor.yaml` | Vulnerability scanning, license compliance, update planning, size analysis | 0.1 |
-| **Project Bootstrapper** | `general/project-bootstrapper.yaml` | Scaffold new projects with CI/CD, testing, Docker, linting setup | 0.2 |
-| **UX Designer** | `general/ux-designer.yaml` | User research, wireframes (ASCII/Mermaid), design systems, accessibility (WCAG 2.2), Nielsen's heuristics, interaction design, responsive specs, design handoff | 0.3 |
-
----
-
-## Language-Specific Expert Agents
-
-Deep-expert agents for individual languages. Each encodes **idiomatic patterns**, **common pitfalls**, **ecosystem conventions**, and **testing culture** unique to that language.
-
-| Agent | File | Key Expertise |
-|-------|------|--------------|
-| **Python Expert** | `general/languages/python-expert.yaml` | PEP 484/604/612/695, async/await, pytest, dataclasses, Pydantic, FastAPI/Django/PyTorch |
-| **Flutter Expert** | `general/languages/flutter-expert.yaml` | Dart 3.x (sealed classes, records, patterns), Riverpod, go_router, clean architecture, golden tests |
-| **Rust Expert** | `general/languages/rust-expert.yaml` | Ownership/lifetimes, thiserror/anyhow, tokio async, traits, zero-cost abstractions, property testing |
-| **PostgreSQL Expert** | `general/languages/postgresql-expert.yaml` | Schema design (3NF+), EXPLAIN ANALYZE, indexing (B-tree/GIN/BRIN), RLS, partitioning, CTEs |
-| **Bash Expert** | `general/languages/bash-expert.yaml` | `set -euo pipefail`, shellcheck, proper quoting, bats-core testing, CI/CD patterns |
-
----
-
-## Shared Subrecipes
-
-Building blocks that main recipes delegate to. Can also be used standalone.
-
-| Subrecipe | File | Purpose |
-|-----------|------|---------|
-| **Language Detection** | `general/subrecipes/language-detection.yaml` | Auto-detect language, framework, toolchain from project files |
-| **TDD Generic** | `general/subrecipes/tdd-generic.yaml` | Red-Green-Refactor cycle for any language |
-| **Static Analysis** | `general/subrecipes/static-analysis.yaml` | Run linters, formatters, type checkers per language |
-| **Git Best Practices** | `general/subrecipes/git-best-practices.yaml` | Conventional commits, PR prep, branch hygiene, hooks |
-| **Literature Review** | `general/subrecipes/literature-review.yaml` | PRISMA-inspired systematic review with structured extraction |
-| **arXiv Search** | `general/subrecipes/arxiv-search.yaml` | Programmatic arXiv paper search with relevance ranking |
-| **Citation Graph** | `general/subrecipes/citation-graph.yaml` | Semantic Scholar citation analysis — PageRank, clusters, velocity |
-| **MLflow Tracking** | `general/subrecipes/mlflow-tracking.yaml` | MLflow: params, metrics, artifacts, Model Registry, Optuna HPO |
-| **Docker ML Environment** | `general/subrecipes/docker-ml-environment.yaml` | Containerized ML: multi-stage Dockerfiles, compose, GPU, MLflow server |
-| **Design System** | `general/subrecipes/design-system.yaml` | Token audit, component inventory, magic value detection, consistency checks |
-
----
-
-## Cross-Delegation Architecture
-
-Recipes delegate to each other for complex workflows:
-
-```
-                    ┌─────────────────────┐
-                    │  Language Detection  │ ◄── All main recipes start here
-                    └──────────┬──────────┘
-                               │
-          ┌────────────────────┼────────────────────┐
-          ▼                    ▼                     ▼
-  ┌───────────────┐   ┌──────────────┐    ┌─────────────────┐
-  │ Main Recipes  │   │  Language     │    │ ML Subrecipes   │
-  │               │   │  Experts     │    │                 │
-  │ • Code Review │   │ • Python     │    │ • arXiv Search  │
-  │ • Security    │   │ • Flutter    │    │ • Citation Graph│
-  │ • Debugging   │   │ • Rust       │    │ • MLflow Track  │
-  │ • Performance │   │ • PostgreSQL │    │ • Docker ML Env │
-  │ • API Design  │   │ • Bash       │    │ • Lit Review    │
-  │ • UX Designer │   │              │    │ • Design System │
-  └───────┬───────┘   └──────┬───────┘    └────────┬────────┘
-          │                   │                      │
-          └───────────────────┼──────────────────────┘
-                              ▼
-                  ┌───────────────────────┐
-                  │   Shared Subrecipes   │
-                  │ • TDD Generic         │
-                  │ • Static Analysis     │
-                  │ • Git Best Practices  │
-                  └───────────────────────┘
-```
-
----
-
-## Best Practices Enforced
-
-| Practice | How Enforced |
-|----------|-------------|
-| **TDD** | Red-Green-Refactor subrecipes with `retry` blocks — tests MUST pass |
-| **Docker-Based ML** | All ML training/serving/evaluation runs inside containers via `docker-ml-environment` subrecipe |
-| **Modularity** | Hard limits: max 400 lines/file, 30 lines/function, 7 public methods/class |
-| **Type Safety** | Language-appropriate type checkers run via `static-analysis` subrecipe |
-| **Security** | OWASP Top 10, secret detection, dependency CVE scanning, no hardcoded credentials |
-| **Git Hygiene** | Conventional Commits, PR templates, pre-commit hooks |
-| **Documentation** | API docs, inline docs, architecture diagrams (Mermaid) |
-| **Performance** | Measure-first methodology, benchmark tests, profiling |
-| **Dependencies** | Vulnerability audits, license compliance, unused detection |
-| **Scientific Rigor** | PRISMA lit review, IEEE citations, statistical significance testing |
-| **Mathematical Precision** | LaTeX notation conventions, derivations from first principles |
-| **Accessibility** | WCAG 2.2 AA audit, keyboard navigation, screen reader support, contrast verification |
-| **UX Quality** | Nielsen's 10 heuristics, JTBD user research, responsive specs, design token consistency |
-| **Reproducibility** | Docker containers, MLflow experiment tracking, seed management |
-
----
-
-## Supported Languages
-
-All general recipes auto-detect and support these languages:
-
-| Language | Linter | Formatter | Type Checker | Test Runner |
-|----------|--------|-----------|-------------|-------------|
-| Python | ruff / flake8 | ruff / black | mypy / pyright | pytest |
-| TypeScript | eslint | prettier | tsc | jest / vitest |
-| JavaScript | eslint | prettier | — | jest / vitest |
-| Dart/Flutter | dart analyze | dart format | dart analyzer | flutter_test |
-| Rust | clippy | rustfmt | (built-in) | cargo test |
-| Go | golangci-lint | gofmt | (built-in) | go test |
-| Java | checkstyle | google-java-format | (compiler) | JUnit 5 |
-| Ruby | rubocop | rubocop | sorbet | RSpec |
-| C# | roslyn analyzers | dotnet format | (compiler) | xUnit / NUnit |
-| PostgreSQL | — | — | — | pgTAP |
-| Bash | shellcheck | shfmt | — | bats-core |
-
----
 
 ## Quick Start
 
-See **[TUTORIAL.md](TUTORIAL.md)** for step-by-step usage with Goose CLI, including real use-case examples.
-
-### Run from CLI
-
+### Goose (Block)
 ```bash
-# Run any recipe
-goose run --recipe general/code-reviewer.yaml
+# Run a recipe directly
+goose run --recipe goose/general/code-reviewer.yaml
 
-# Language expert
-goose run --recipe general/languages/python-expert.yaml
-
-# ML research
-goose run --recipe general/ai-researcher.yaml
+# With parameters
+goose run --recipe goose/general/debugging-agent.yaml \
+  --params symptom="TypeError in auth middleware" project_path="."
 ```
 
-### Import into Goose Desktop
+### Claude Code (Anthropic)
+```bash
+# Install agents (project-level)
+mkdir -p .claude/agents
+cp claude/agents/*.md .claude/agents/
+cp -r claude/agents/languages .claude/agents/
+cp -r claude/agents/specialized .claude/agents/
 
-1. Open **Goose Desktop** → **Settings** → **Recipe Library**
-2. Add from local path or import the YAML file
+# Or user-level (available in all projects)
+cp claude/agents/*.md ~/.claude/agents/
+cp -r claude/agents/languages ~/.claude/agents/
+cp -r claude/agents/specialized ~/.claude/agents/
 
-### Customize for Your Project
+# Agents activate automatically — just describe your task
+claude
+> Review the auth module for security issues
+# → Delegates to security-auditor agent
 
-1. Fork this repo
-2. Copy the recipe you want to customize
-3. Update the `instructions` section with your project context
-4. Adjust `retry.checks` commands for your test runners
+> Debug the failing test in user_service
+# → Delegates to debugger agent
+```
 
----
+## Agent Catalog
+
+### Core Agents (8)
+| Agent | Goose | Claude | Purpose |
+|-------|-------|--------|---------|
+| Code Reviewer | ✅ | ✅ | Correctness, security, performance, maintainability review |
+| Debugger | ✅ | ✅ | Scientific debugging: observe → hypothesize → test → fix |
+| Security Auditor | ✅ | ✅ | OWASP Top 10, secret detection, CVE scanning, compliance |
+| Performance Optimizer | ✅ | ✅ | Measure → analyze → optimize → validate (data-driven) |
+| Documentation Agent | ✅ | ✅ | API docs, READMEs, Mermaid diagrams, changelogs |
+| API Designer | ✅ | ✅ | REST/GraphQL/gRPC with proper HTTP semantics, OpenAPI |
+| Dependency Auditor | ✅ | ✅ | Vulnerability, license, unused deps, size analysis |
+| Project Bootstrapper | ✅ | ✅ | Scaffold projects with TDD, CI/CD, Docker, linting |
+
+### Language Experts (5)
+| Agent | Languages/Focus |
+|-------|----------------|
+| Python Expert | Modern Python 3.10+, PEP 604/612/695, pytest, FastAPI/Django/PyTorch |
+| Flutter Expert | Dart 3.x sealed classes, Riverpod, go_router, clean architecture |
+| Rust Expert | Ownership/lifetimes, tokio async, thiserror/anyhow, proptest |
+| PostgreSQL Expert | Schema design, keyset pagination, RLS, BRIN indexes, partitioning |
+| Bash Expert | Defensive scripting, CI/CD pipelines, bats-core testing |
+
+### Specialized Agents (2)
+| Agent | Goose | Claude | Purpose |
+|-------|-------|--------|---------|
+| AI/ML Researcher | ✅ (1165 lines) | ✅ | Literature review, ML design, math formulation, MLflow, Docker |
+| UX Designer | ✅ (863 lines) | ✅ | Journey mapping, wireframes, design systems, WCAG 2.2 |
+
+### Goose-Only Subrecipes (10)
+Shared workflows that Goose recipes delegate to:
+| Subrecipe | Purpose |
+|-----------|---------|
+| `language-detection` | Auto-detect language, framework, toolchain |
+| `tdd-generic` | Red-Green-Refactor cycle for any language |
+| `static-analysis` | Linters, formatters, type checkers |
+| `git-best-practices` | Conventional commits, PR prep |
+| `arxiv-search` | arXiv API integration for paper discovery |
+| `citation-graph` | Semantic Scholar citation graph + PageRank |
+| `mlflow-tracking` | MLflow experiment tracking + Optuna HPO |
+| `docker-ml-environment` | Docker-based ML development setup |
+| `literature-review` | PRISMA-inspired systematic review |
+| `design-system` | Design tokens and component specs |
+
+## Enforced Practices
+
+All agents enforce these principles regardless of platform:
+
+| Practice | How Enforced |
+|----------|-------------|
+| **TDD** | Every agent requires tests FIRST — Red-Green-Refactor is mandatory |
+| **Language best practices** | Per-language checklists (PEP 484 for Python, Effective Dart, etc.) |
+| **Modularity** | Max 400 lines/file, 30 lines/function, 7 public methods/class |
+| **Security** | Secret detection, OWASP checks, regression tests for vulnerabilities |
+| **Docker** | ML work requires Docker environments for reproducibility |
+| **Accessibility** | UX work requires WCAG 2.2 AA compliance |
+
+## Format Comparison
+
+| Feature | Goose (YAML) | Claude Code (Markdown) |
+|---------|-------------|----------------------|
+| File format | `.yaml` with structured fields | `.md` with YAML frontmatter |
+| Parameters | Typed `parameters:` with defaults | Natural language in prompt |
+| Sub-delegation | `sub_recipes:` paths | Chain agents via main conversation |
+| Retry logic | `retry:` with shell checks | `hooks:` with exit codes |
+| Tool access | `extensions:` (builtin/MCP) | `tools:` allowlist |
+| Persistent memory | None | `memory: user/project/local` |
+| Model control | `settings.temperature` | `model: sonnet/opus/haiku` |
+
+## Contributing
+
+1. Fork the repository
+2. Add or modify agents in both `goose/` and `claude/` directories
+3. Ensure TDD is enforced in every new agent
+4. Submit a PR with description of the agent's purpose
 
 ## License
 
