@@ -4,10 +4,11 @@ A collection of specialized [Goose](https://github.com/block/goose) agent recipe
 
 ## Repository Structure
 
-This repo contains two sets of recipes:
+This repo contains three sets of recipes:
 
 1. **Project-Specific** (root `/`) — Tailored for RiseRally (FastAPI + Flutter + PyTorch)
 2. **General-Purpose** (`general/`) — Language-agnostic, works with any project
+3. **Language-Specific** (`general/languages/`) — Deep-expert agents for individual languages
 
 ```
 goose-recipes/
@@ -25,7 +26,7 @@ goose-recipes/
 │
 └── # ── General-Purpose ───────────────────────
     general/
-    ├── ai-researcher.yaml
+    ├── ai-researcher.yaml          # ML Research Scientist (publication review, math, diagrams)
     ├── code-reviewer.yaml
     ├── security-auditor.yaml
     ├── documentation-agent.yaml
@@ -34,12 +35,18 @@ goose-recipes/
     ├── api-designer.yaml
     ├── dependency-auditor.yaml
     ├── project-bootstrapper.yaml
-    └── subrecipes/
-        ├── language-detection.yaml
-        ├── literature-review.yaml
-        ├── static-analysis.yaml
-        ├── git-best-practices.yaml
-        └── tdd-generic.yaml
+    ├── subrecipes/
+    │   ├── language-detection.yaml
+    │   ├── literature-review.yaml
+    │   ├── static-analysis.yaml
+    │   ├── git-best-practices.yaml
+    │   └── tdd-generic.yaml
+    └── languages/                  # Language-specific deep experts
+        ├── python-agent.yaml       # Python 3.10+ / pytest / type system
+        ├── flutter-agent.yaml      # Flutter/Dart / Riverpod / go_router
+        ├── rust-agent.yaml         # Rust / ownership / tokio / cargo
+        ├── postgresql-agent.yaml   # PostgreSQL / schema / query optimization
+        └── bash-agent.yaml         # Bash / shellcheck / bats-core
 ```
 
 ---
@@ -52,7 +59,7 @@ These recipes work with **any project** in any language. They auto-detect your t
 
 | Recipe | File | Purpose | Temp |
 |--------|------|---------|------|
-| **AI/ML Researcher** | `general/ai-researcher.yaml` | Scientific ML research: lit review, tradeoff analysis, math formulations, Mermaid diagrams, citations | 0.3 |
+| **AI/ML Researcher** | `general/ai-researcher.yaml` | Scientific ML research: lit review, publication critique, tradeoff analysis, LaTeX math, Mermaid diagrams, IEEE citations | 0.3 |
 | **Code Reviewer** | `general/code-reviewer.yaml` | Comprehensive code review: correctness, security, performance, maintainability | 0.3 |
 | **Security Auditor** | `general/security-auditor.yaml` | OWASP Top 10, secret detection, dependency CVEs, infrastructure review | 0.2 |
 | **Documentation Agent** | `general/documentation-agent.yaml` | API docs, inline docs, READMEs, architecture diagrams, changelogs | 0.3 |
@@ -72,7 +79,85 @@ These recipes work with **any project** in any language. They auto-detect your t
 | **Git Best Practices** | `general/subrecipes/git-best-practices.yaml` | Conventional commits, PR prep, branch hygiene, hooks |
 | **TDD Generic** | `general/subrecipes/tdd-generic.yaml` | Red-Green-Refactor cycle for any language |
 
-### Supported Languages
+---
+
+## Language-Specific Expert Agents
+
+Deep-expert agents for individual languages. Each one encodes **idiomatic patterns**, **common pitfalls**, **ecosystem conventions**, and **testing culture** unique to that language. They can be used standalone or as delegates from other recipes.
+
+### Agents
+
+| Agent | File | Lines | Key Expertise |
+|-------|------|-------|--------------|
+| **Python Expert** | `general/languages/python-agent.yaml` | 550 | PEP 484/604/612, async/await, pytest, dataclasses, Pydantic, FastAPI/Django/PyTorch patterns |
+| **Flutter Expert** | `general/languages/flutter-agent.yaml` | 530 | Dart 3.x (sealed classes, records, patterns), Riverpod, go_router, clean architecture, mocktail |
+| **Rust Expert** | `general/languages/rust-agent.yaml` | 463 | Ownership/lifetimes, thiserror/anyhow, tokio async, traits, zero-cost abstractions, property testing |
+| **PostgreSQL Expert** | `general/languages/postgresql-agent.yaml` | 516 | Schema design (3NF+), EXPLAIN ANALYZE, indexing (B-tree/GIN/BRIN), RLS, partitioning, CTEs, window functions |
+| **Bash Expert** | `general/languages/bash-agent.yaml` | 648 | `set -euo pipefail`, shellcheck compliance, proper quoting, bats-core testing, CI/CD patterns, Makefile integration |
+
+### Language Agent Features
+
+| Feature | Python | Flutter | Rust | PostgreSQL | Bash |
+|---------|--------|---------|------|------------|------|
+| **Type system** | PEP 484/604 + mypy | Dart strong types + sealed | Ownership + lifetimes | Column types + constraints | ShellCheck |
+| **Testing** | pytest + parametrize | flutter_test + mocktail | cargo test + proptest | pgTAP + app-level | bats-core |
+| **Linting** | ruff + mypy | dart analyze | clippy | N/A | shellcheck |
+| **Error handling** | Custom hierarchy | Result<T> pattern | thiserror/anyhow | Constraints + RLS | trap + die() |
+| **Performance** | Profiling, generators, slots | const widgets, RepaintBoundary | Zero-cost, iterators, SIMD | EXPLAIN ANALYZE, indexes | Parameter expansion |
+| **Modularity** | 400 lines/file, 30 lines/fn | 300 lines/file, 30 lines/build | 500 lines/mod, 40 lines/fn | One migration per change | 300 lines/script, 30 lines/fn |
+| **TDD enforced** | ✅ retry block | ✅ retry block | ✅ retry block | ✅ via app-level | ✅ shellcheck retry |
+
+### Cross-Delegation
+
+Language agents can be invoked by general agents and vice versa:
+
+```
+General Agent ──→ Language Agent
+  Code Reviewer ──→ Python/Flutter/Rust Agent (for language-specific checks)
+  Debugging Agent ──→ Python/Rust Agent (for language-specific debugging tools)
+
+Language Agent ──→ Shared Subrecipes
+  Python Agent ──→ TDD Generic, Static Analysis, Code Reviewer
+  Flutter Agent ──→ TDD Generic, Static Analysis, Code Reviewer
+  Rust Agent ──→ TDD Generic, Static Analysis, Code Reviewer
+  PostgreSQL Agent ──→ TDD Generic, Static Analysis, Security Auditor
+  Bash Agent ──→ TDD Generic, Static Analysis, Code Reviewer
+```
+
+---
+
+## AI/ML Research Scientist — Detailed Capabilities
+
+The `general/ai-researcher.yaml` recipe (817 lines) is a peer-reviewer-caliber research agent with:
+
+### Research Phases
+| Phase | Purpose | Key Output |
+|-------|---------|-----------|
+| **Literature Review** | Systematic PRISMA search | Taxonomy mindmap, performance landscape, timeline |
+| **Publication Review** | Peer-review quality critique | Strengths/weaknesses, math verification, scores |
+| **Solution Design** | Multi-criteria tradeoff analysis | Weighted decision matrix, Pareto analysis, risk assessment |
+| **Mathematical Formulation** | Full derivations from first principles | LaTeX equations, gradient computation, complexity analysis |
+| **Experimental Design** | Statistically rigorous protocols | Hypothesis, baselines, metrics, power analysis |
+| **Implementation** | TDD-driven ML code | Tested components with config management |
+| **Evaluation** | Results with statistical significance | Tables, ablations, error analysis, computational profile |
+
+### Output Formats
+- **Technical Report** — NeurIPS-style structure with abstract, methodology, results
+- **Paper Draft** — Full paper formatting
+- **Design Document** — Production-focused with engineering tradeoffs
+- **Jupyter Notebook** — Executable cells with explanations
+- **Peer Review** — Structured critique with scoring
+
+### Standards Enforced
+- IEEE citation format with DOI/arXiv IDs
+- Consistent LaTeX notation (vectors bold, matrices bold uppercase, sets calligraphic)
+- Mermaid diagrams: architecture, pipeline, taxonomy, tradeoff quadrants, timeline, sequence
+- Statistical methodology: paired t-tests, Bonferroni correction, effect sizes, confidence intervals
+- Reproducibility checklist: seeds, hardware, library versions, compute budget
+
+---
+
+## Supported Languages
 
 All general recipes support these languages (auto-detected):
 
@@ -87,20 +172,8 @@ All general recipes support these languages (auto-detected):
 | Java | checkstyle | google-java-format | (compiler) | JUnit 5 |
 | Ruby | rubocop | rubocop | sorbet | RSpec |
 | C# | roslyn analyzers | dotnet format | (compiler) | xUnit / NUnit |
-
-### Cross-Delegation Map
-
-```
-AI/ML Researcher ──→ Literature Review, Language Detection, TDD Generic, Static Analysis, Code Reviewer, Documentation Agent
-Code Reviewer ──→ Language Detection, Static Analysis
-Security Auditor ──→ Language Detection, Static Analysis
-Documentation Agent ──→ Language Detection
-Debugging Agent ──→ Language Detection, TDD Generic, Static Analysis
-Performance Optimizer ──→ Language Detection, TDD Generic, Static Analysis
-API Designer ──→ Language Detection, TDD Generic, Code Reviewer
-Dependency Auditor ──→ Language Detection
-Project Bootstrapper ──→ Language Detection, TDD Generic, Git Best Practices
-```
+| **PostgreSQL** | — | — | — | pgTAP |
+| **Bash** | shellcheck | shfmt | — | bats-core |
 
 ---
 
@@ -139,6 +212,8 @@ These recipes are tailored for the RiseRally fitness platform (FastAPI + Flutter
 | **Documentation** | API docs, inline docs, architecture diagrams (Mermaid) |
 | **Performance** | Measure-first methodology, benchmark tests, profiling |
 | **Dependencies** | Vulnerability audits, license compliance, unused detection |
+| **Scientific Rigor** | PRISMA literature review, IEEE citations, statistical significance testing |
+| **Mathematical Precision** | LaTeX notation conventions, derivations from first principles |
 
 ---
 
@@ -157,6 +232,13 @@ goose run --recipe general/api-designer.yaml
 goose run --recipe general/dependency-auditor.yaml
 goose run --recipe general/documentation-agent.yaml
 goose run --recipe general/project-bootstrapper.yaml
+
+# Language-specific experts
+goose run --recipe general/languages/python-agent.yaml
+goose run --recipe general/languages/flutter-agent.yaml
+goose run --recipe general/languages/rust-agent.yaml
+goose run --recipe general/languages/postgresql-agent.yaml
+goose run --recipe general/languages/bash-agent.yaml
 
 # Project-specific (RiseRally)
 goose run --recipe solution-architect.yaml
