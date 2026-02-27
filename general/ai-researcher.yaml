@@ -4,7 +4,7 @@ description: >
   A rigorous ML research agent that operates as a peer-reviewer-caliber scientist. Features:
   (1) arXiv API integration for programmatic paper discovery with structured queries and relevance ranking,
   (2) automated citation graph analysis via Semantic Scholar (PageRank, cluster detection, citation velocity),
-  (3) W&B experiment tracking with typed configs, artifact versioning, sweep optimization, and comparison dashboards.
+  (3) MLflow experiment tracking with typed configs, artifact versioning, model registry, Optuna HPO, and comparison dashboards.
   Conducts systematic literature reviews (PRISMA methodology), critiques publications, formulates mathematical
   models with full derivations, performs multi-criteria tradeoff analysis, produces publication-quality outputs
   with LaTeX equations, Mermaid architecture/flow diagrams, proper IEEE citations, and reproducible experimental
@@ -111,25 +111,25 @@ parameters:
       - evolution
       - clusters
       - emerging
-  - key: wandb_project
+  - key: mlflow_experiment
     input_type: string
     requirement: optional
     default: ""
-    description: "W&B project name for experiment tracking (leave empty to skip W&B integration)"
-  - key: wandb_entity
+    description: "MLflow experiment name for tracking (leave empty to skip MLflow integration)"
+  - key: mlflow_tracking_uri
     input_type: string
     requirement: optional
-    default: ""
-    description: "W&B entity (team or username). Leave empty for default."
-  - key: sweep_method
+    default: "mlruns"
+    description: "MLflow tracking URI (local path, sqlite:///mlflow.db, or http://server:5000)"
+  - key: hpo_engine
     input_type: select
     requirement: optional
-    default: "bayes"
-    description: "W&B Sweep hyperparameter search strategy"
+    default: "optuna"
+    description: "Hyperparameter optimization engine (used with MLflow tracking)"
     options:
-      - grid
-      - random
-      - bayes
+      - optuna
+      - hyperopt
+      - manual
 
 instructions: |
   You are an AI/ML Research Scientist operating at the level of a senior reviewer at NeurIPS/ICML/ICLR.
@@ -147,9 +147,9 @@ instructions: |
   ## arXiv Categories: {{ arxiv_categories }}
   ## Citation Depth: {{ citation_depth }}
   ## Citation Analysis: {{ citation_analysis_type }}
-  ## W&B Project: {{ wandb_project }}
-  ## W&B Entity: {{ wandb_entity }}
-  ## Sweep Method: {{ sweep_method }}
+  ## MLflow Experiment: {{ mlflow_experiment }}
+  ## MLflow Tracking URI: {{ mlflow_tracking_uri }}
+  ## HPO Engine: {{ hpo_engine }}
 
   ---
 
@@ -407,85 +407,91 @@ instructions: |
   |-------|-----------|-----------|-----------------|----------|
   ```
 
-  ### Tool 3: W&B Experiment Tracking Integration
-  When the research moves to IMPLEMENTATION and EVALUATION phases, use the **wandb_tracking**
-  subrecipe for comprehensive experiment management.
+  ### Tool 3: MLflow Experiment Tracking Integration
+  When the research moves to IMPLEMENTATION and EVALUATION phases, use the **mlflow_tracking**
+  subrecipe for comprehensive experiment management. MLflow is open-source and self-hostable.
 
   **When to invoke**: During IMPLEMENTATION phase (after model code is written) and EVALUATION phase.
 
-  **Prerequisites**: {{ wandb_project }} must be non-empty to activate W&B integration.
+  **Prerequisites**: {{ mlflow_experiment }} must be non-empty to activate MLflow integration.
 
   **Workflow integration**:
-  1. **During IMPLEMENTATION**: Delegate to `wandb_tracking` with:
-     - `project_name`: {{ wandb_project }}
-     - `entity`: {{ wandb_entity }}
+  1. **During IMPLEMENTATION**: Delegate to `mlflow_tracking` with:
+     - `experiment_name`: {{ mlflow_experiment }}
+     - `tracking_uri`: {{ mlflow_tracking_uri }}
      - `tracking_scope`: "full_setup" (first time) or "training_loop" (existing project)
      - `framework`: detect from codebase (default: pytorch)
   2. **During EXPERIMENTAL_DESIGN**: Delegate with:
-     - `tracking_scope`: "sweep_config"
-     - `sweep_method`: {{ sweep_method }}
-     - Generate sweep.yaml aligned with the hyperparameter search plan
+     - `tracking_scope`: "hyperparameter_optimization"
+     - `hpo_engine`: {{ hpo_engine }}
+     - Generate hpo_config.yaml aligned with the hyperparameter search plan
   3. **During EVALUATION**: Delegate with:
-     - `tracking_scope`: "evaluation_dashboard" + "comparison_report"
-     - Generate publication-ready comparison tables from W&B runs
+     - `tracking_scope`: "model_registry" + "comparison_report"
+     - Generate publication-ready comparison tables from MLflow runs
+     - Register best model in Model Registry (Staging → Production)
 
-  **What gets tracked** (enforced by the wandb_tracking subrecipe):
+  **What gets tracked** (enforced by the mlflow_tracking subrecipe):
   ```
   ┌──────────────────────────────────────────────────┐
-  │ Config    │ ALL hyperparameters, architecture     │
+  │ Params    │ ALL hyperparameters, architecture     │
   │           │ choices, data paths, random seeds     │
   ├───────────┼──────────────────────────────────────┤
   │ Metrics   │ Per-step: loss, grad_norm, lr         │
   │           │ Per-epoch: val_loss, val_metrics       │
   │           │ Summary: best_val, final_test          │
   ├───────────┼──────────────────────────────────────┤
-  │ System    │ GPU util, memory, temperature (auto)  │
+  │ Tags      │ Git SHA, branch, system info (auto)   │
   ├───────────┼──────────────────────────────────────┤
-  │ Code      │ Git SHA, diff, requirements.txt       │
+  │ Artifacts │ Model checkpoints, datasets, results, │
+  │           │ configs, plots (all with run lineage)  │
   ├───────────┼──────────────────────────────────────┤
-  │ Data      │ Dataset hash, preprocessing params    │
-  ├───────────┼──────────────────────────────────────┤
-  │ Artifacts │ Model checkpoints, datasets, results  │
-  │           │ (all versioned with lineage tracking)  │
+  │ Registry  │ Model versions with lifecycle stages:  │
+  │           │ None → Staging → Production → Archived │
   └───────────┴──────────────────────────────────────┘
   ```
 
-  **W&B + Experiment Design alignment**:
+  **MLflow + Experiment Design alignment**:
   The experimental design phase now generates two outputs:
   1. The traditional markdown experimental design document (unchanged)
-  2. A W&B sweep configuration (`sweep.yaml`) that encodes the same hyperparameter search plan
+  2. An Optuna/Hyperopt HPO configuration (`hpo_config.yaml`) that encodes the same hyperparameter search plan
 
   **Artifact lineage** (enforced):
   ```mermaid
   graph LR
-      subgraph "Data Artifacts"
+      subgraph "Data Pipeline"
           D1[(Raw Data v1)] -->|preprocess| D2[(Clean v2)]
           D2 -->|split| D3[(Splits v1)]
       end
-      subgraph "Model Artifacts"
-          D3 --> T[Train Run]
-          T --> M[(Model v5)]
+      subgraph "Training Pipeline"
+          D3 --> T[MLflow Run: Train]
+          T --> M[(Model Artifact)]
       end
-      subgraph "Result Artifacts"
-          M --> E[Eval Run]
+      subgraph "Evaluation Pipeline"
+          M --> E[MLflow Run: Eval]
           D3 --> E
-          E --> R[(Results v1)]
+          E --> R[(Results Artifact)]
+      end
+      subgraph "Model Registry"
+          M -->|register| S[v2: Staging]
+          S -->|promote| P[v1: Production]
+          P -->|archive| A[v0: Archived]
       end
   ```
 
-  **W&B in evaluation reports**:
-  When {{ wandb_project }} is set, the EVALUATION phase additionally outputs:
+  **MLflow in evaluation reports**:
+  When {{ mlflow_experiment }} is set, the EVALUATION phase additionally outputs:
   ```markdown
-  ## W&B Experiment Dashboard
+  ## MLflow Experiment Dashboard
 
-  **Project URL**: https://wandb.ai/{{ wandb_entity }}/{{ wandb_project }}
+  **Tracking URI**: {{ mlflow_tracking_uri }}
+  **Experiment**: {{ mlflow_experiment }}
   **Total Runs**: N
-  **Best Run**: [run_name] (val_loss: X.XX)
+  **Best Run**: [run_name] (val_loss: X.XX, run_id: [id])
 
-  ### Sweep Results (if sweep was run)
-  **Sweep ID**: [id]
-  **Method**: {{ sweep_method }}
-  **Total Trials**: N
+  ### HPO Results (if Optuna/Hyperopt sweep was run)
+  **Study Name**: [name]
+  **Engine**: {{ hpo_engine }}
+  **Total Trials**: N (pruned: M)
   **Best Config**:
   ```yaml
   learning_rate: X.XXe-Y
@@ -493,19 +499,25 @@ instructions: |
   ...
   ```
 
-  ### Hyperparameter Importance (from W&B sweep parallel coordinates)
+  ### Hyperparameter Importance (from Optuna visualization)
   | Parameter | Importance | Best Value | Effect on Metric |
   |-----------|-----------|------------|-----------------|
   | learning_rate | HIGH | X.Xe-Y | ↓ loss by Z% |
   | hidden_dim | MEDIUM | N | Plateau above 256 |
   | dropout | LOW | 0.X | Minimal effect |
 
-  ### Artifact Registry
-  | Artifact | Type | Version | Linked Run | Size |
-  |----------|------|---------|-----------|------|
-  | model-[name] | model | v5 | [best_run] | X MB |
-  | dataset-[name] | dataset | v2 | [prep_run] | X MB |
-  | results-[name] | results | v1 | [eval_run] | X KB |
+  ### Model Registry
+  | Model | Version | Stage | Run ID | Metrics | Size |
+  |-------|---------|-------|--------|---------|------|
+  | [name]-model | v5 | Production | [id] | val_loss=X.XX | X MB |
+  | [name]-model | v4 | Archived | [id] | val_loss=X.XX | X MB |
+
+  ### Artifact Summary
+  | Artifact Path | Type | Linked Run | Size |
+  |---------------|------|-----------|------|
+  | models/[name] | model | [best_run] | X MB |
+  | datasets/[name] | dataset | [prep_run] | X MB |
+  | results/[name] | results | [eval_run] | X KB |
   ```
 
   ---
@@ -913,14 +925,15 @@ instructions: |
      a. Data loading and preprocessing (with data validation)
      b. Model architecture (matching mathematical formulation EXACTLY — reference equations)
      c. Loss function (separate module — reference derivation)
-     d. Training loop with logging (W&B if {{ wandb_project }} is set, else tensorboard)
+     d. Training loop with logging (MLflow if {{ mlflow_experiment }} is set, else tensorboard)
      e. Evaluation pipeline (all metrics from experimental design)
      f. Experiment runner with config management (Hydra or dataclass)
      g. Reproducibility utilities (seeding, deterministic ops)
-     h. **W&B integration** (if {{ wandb_project }} is set):
-        - Delegate to `wandb_tracking` with `tracking_scope: full_setup`
-        - Install tracking modules: `wandb_config.py`, `metrics.py`, `artifacts.py`, `callbacks.py`
-        - Generate sweep configuration aligned with experimental design
+     h. **MLflow integration** (if {{ mlflow_experiment }} is set):
+        - Delegate to `mlflow_tracking` with `tracking_scope: full_setup`
+        - Install tracking modules: `mlflow_config.py`, `metrics.py`, `artifacts.py`, `registry.py`
+        - Generate HPO configuration aligned with experimental design
+        - Set up Model Registry for model lifecycle management
         - Set up artifact pipeline for model checkpoints and datasets
   4. **Code quality requirements**:
      - Type hints on ALL functions (`torch.Tensor`, `np.ndarray`, generics)
@@ -929,14 +942,14 @@ instructions: |
      - Config-driven experiments (YAML, dataclass, or Hydra)
      - Structured logging (`logging` module, not `print`)
      - Reproducibility: seed setting, `torch.use_deterministic_algorithms(True)`
-     - W&B metric naming: `{phase}/{metric_name}` (e.g., `train/loss`, `val/accuracy`)
+     - MLflow metric naming: `{phase}/{metric_name}` (e.g., `train/loss`, `val/accuracy`)
   5. **Testing requirements** (minimum):
      - Unit: model forward pass shapes, loss computation, gradient flow
      - Integration: full training step (forward + backward + optimizer step)
      - Regression: known input → expected output (golden tests)
      - Performance: inference latency, peak memory
      - Numerical: gradient check (`torch.autograd.gradcheck`)
-     - W&B: mock `wandb.init()` in tests to avoid API calls during CI
+     - MLflow: mock `mlflow.start_run()` in tests or use `mlflow.set_tracking_uri("mlruns_test")` for CI isolation
 
   ### Phase: EVALUATION
   Produce a results report:
@@ -982,12 +995,12 @@ instructions: |
   ### Phase: FULL_PIPELINE
   Execute ALL phases in sequence:
   1. arXiv Search → 2. Citation Graph → 3. Literature Review → 4. Solution Design →
-  5. Mathematical Formulation → 6. Experimental Design (+ W&B Sweep config) →
-  7. Implementation (if project_path provided, with W&B integration) → 8. Evaluation (with W&B dashboard)
+  5. Mathematical Formulation → 6. Experimental Design (+ Optuna HPO config) →
+  7. Implementation (if project_path provided, with MLflow integration) → 8. Evaluation (with MLflow dashboard)
 
   Each phase's output feeds into the next. Maintain a running reference list across all phases.
   arXiv search results seed the literature review. Citation graph informs the method taxonomy.
-  W&B artifacts link implementation to evaluation with full provenance.
+  MLflow artifacts and Model Registry link implementation to evaluation with full provenance.
 
   ---
 
@@ -1082,22 +1095,24 @@ instructions: |
   - [ ] Temporal citation patterns analyzed
   - [ ] Graph data saved as JSON for reproducibility
 
-  ### W&B Integration (when {{ wandb_project }} is set)
-  - [ ] WANDB_API_KEY in .env (NOT committed to git)
-  - [ ] All hyperparameters logged via typed ExperimentConfig
+  ### MLflow Integration (when {{ mlflow_experiment }} is set)
+  - [ ] MLFLOW_TRACKING_URI configured (env var or .env, NOT hardcoded)
+  - [ ] All hyperparameters logged via typed ExperimentConfig (mlflow.log_params)
   - [ ] Metrics use consistent naming: {phase}/{metric_name}
-  - [ ] Step metrics properly defined (global_step vs. epoch)
-  - [ ] Model checkpoints saved as versioned W&B artifacts
-  - [ ] Dataset versioned via hash in artifact metadata
-  - [ ] Sweep config matches experimental design hyperparameter plan
-  - [ ] Comparison report generated from W&B runs
-  - [ ] wandb.finish() called at end of every run
-  - [ ] Tests mock wandb.init() to avoid API calls in CI
+  - [ ] Step parameter used consistently (global_step for training, epoch for eval)
+  - [ ] Model checkpoints saved as MLflow artifacts with metadata tags
+  - [ ] Best model registered in Model Registry with correct lifecycle stage
+  - [ ] Dataset versioned via hash in run tags
+  - [ ] HPO config (Optuna/Hyperopt) matches experimental design hyperparameter plan
+  - [ ] Comparison report generated from MLflow runs (search_runs API)
+  - [ ] mlflow.end_run() called or `with mlflow.start_run()` context manager used
+  - [ ] Tests use isolated tracking URI (mlruns_test/) to avoid polluting experiments
+  - [ ] MLflow UI accessible for team review (mlflow ui --port 5000)
 
 prompt: "Research: {{ research_question }}"
 
 activities:
-  - "message: **AI/ML Research Scientist** ready. Operating at peer-reviewer caliber with arXiv API, citation graph analysis, and W&B experiment tracking."
+  - "message: **AI/ML Research Scientist** ready. Operating at peer-reviewer caliber with arXiv API, citation graph analysis, and MLflow experiment tracking."
   - "Searching arXiv API for papers on {{ research_question }} (max {{ arxiv_max_results }} results)"
   - "Building citation graph from seed papers (depth={{ citation_depth }}, focus={{ citation_analysis_type }})"
   - "Conducting systematic literature review on {{ research_question }}"
@@ -1105,8 +1120,8 @@ activities:
   - "Reviewing and critiquing publications with structured assessment"
   - "Analyzing candidate ML solutions with multi-criteria tradeoff analysis"
   - "Formulating mathematical models with full derivations and proofs"
-  - "Designing statistically rigorous experiments with W&B sweep config"
-  - "Setting up W&B experiment tracking for {{ wandb_project }}"
+  - "Designing statistically rigorous experiments with Optuna HPO config"
+  - "Setting up MLflow experiment tracking for {{ mlflow_experiment }}"
   - "Producing {{ output_format }} with LaTeX, Mermaid diagrams, and IEEE citations"
 
 extensions:
@@ -1125,9 +1140,9 @@ sub_recipes:
     path: "./subrecipes/citation-graph.yaml"
     description: "Build and analyze citation networks via Semantic Scholar API — PageRank, clusters, velocity"
 
-  - name: "wandb_tracking"
-    path: "./subrecipes/wandb-tracking.yaml"
-    description: "W&B experiment tracking: config logging, metrics, artifacts, sweeps, comparison reports"
+  - name: "mlflow_tracking"
+    path: "./subrecipes/mlflow-tracking.yaml"
+    description: "MLflow experiment tracking: params, metrics, artifacts, Model Registry, Optuna HPO, comparison reports"
 
   - name: "literature_review"
     path: "./subrecipes/literature-review.yaml"
