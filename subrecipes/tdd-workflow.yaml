@@ -1,0 +1,82 @@
+version: "1.0.0"
+title: "TDD Workflow"
+description: "Shared Test-Driven Development workflow that enforces red-green-refactor cycle. Used by all agent recipes to ensure correctness."
+
+parameters:
+  - key: target_path
+    input_type: string
+    requirement: required
+    description: "Path to the file or module under development"
+  - key: language
+    input_type: select
+    requirement: required
+    description: "Programming language for the target code"
+    options:
+      - python
+      - dart
+      - sql
+  - key: test_description
+    input_type: string
+    requirement: required
+    description: "Description of the behavior to test"
+  - key: test_scope
+    input_type: select
+    requirement: optional
+    default: "unit"
+    description: "Scope of the test to write"
+    options:
+      - unit
+      - integration
+      - e2e
+
+instructions: |
+  You are a strict TDD practitioner. Follow the Red-Green-Refactor cycle exactly.
+
+  ## Target
+  - File/module: {{ target_path }}
+  - Language: {{ language }}
+  - Behavior: {{ test_description }}
+  - Test scope: {{ test_scope }}
+
+  ## TDD Cycle (follow in order)
+
+  ### Phase 1: RED - Write a Failing Test
+  1. Read the existing code at {{ target_path }} to understand the current state.
+  2. Write a test for the described behavior BEFORE writing any implementation.
+  3. Language conventions:
+     - **Python**: Use `pytest` with descriptive names (`test_<behavior>_when_<condition>_should_<result>`). Place in `tests/` mirroring src structure. Use fixtures and parametrize where appropriate.
+     - **Dart**: Use `flutter_test` package. Follow `group()`/`test()` structure. Place in `test/` mirroring lib structure. Use `setUp`/`tearDown` for state management.
+  4. Run the test and CONFIRM it fails. If it passes, the test is not adding value — revise it.
+
+  ### Phase 2: GREEN - Write Minimal Implementation
+  1. Write the MINIMUM code to make the failing test pass.
+  2. Do NOT add extra functionality, optimization, or "nice-to-haves".
+  3. Language best practices:
+     - **Python**: Type hints on all public functions. Docstrings for public APIs. Follow PEP 8. Use Pydantic models for data validation.
+     - **Dart**: Strong typing (no `dynamic` unless unavoidable). Document public APIs with `///`. Follow Effective Dart guidelines. Use Freezed for immutable models.
+  4. Run the test and CONFIRM it passes.
+
+  ### Phase 3: REFACTOR - Improve Without Changing Behavior
+  1. Improve code quality while keeping ALL tests green.
+  2. Apply patterns:
+     - Extract methods/classes when functions exceed 20 lines
+     - Eliminate duplication (DRY)
+     - Ensure single responsibility (each class/function does ONE thing)
+     - Apply dependency injection for testability
+  3. Run ALL tests (not just the new one) after refactoring.
+
+  ## Validation
+  After completing the cycle:
+  - All tests must pass
+  - No test should be skipped or marked expected-to-fail
+  - Test coverage for the changed code should be meaningful (not just line coverage)
+  - Report: what was tested, what was implemented, what was refactored
+
+prompt: "Begin TDD cycle for: {{ test_description }}"
+
+retry:
+  max_retries: 2
+  checks:
+    - type: shell
+      command: "cd ~/Sync/work/RiseRally && python -m pytest tests/ -x --tb=short -q 2>/dev/null || flutter test 2>/dev/null"
+  on_failure: "echo 'Tests failed — reviewing implementation for issues'"

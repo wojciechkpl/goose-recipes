@@ -1,0 +1,63 @@
+version: "1.0.0"
+title: "Test Validation"
+description: "Runs the test suite for a given service and reports results. Validates that changes haven't broken existing functionality."
+
+parameters:
+  - key: service
+    input_type: select
+    requirement: required
+    description: "Which service to test"
+    options:
+      - backend
+      - mobile
+      - ml_engine
+      - all
+  - key: test_path
+    input_type: string
+    requirement: optional
+    default: ""
+    description: "Specific test file or directory to run (empty = all tests for the service)"
+
+instructions: |
+  You are a test runner and validator. Run tests for the {{ service }} service and provide a clear report.
+
+  ## Test Execution
+
+  ### Backend (Python/FastAPI)
+  ```bash
+  cd ~/Sync/work/RiseRally/src/backend
+  python -m pytest {{ test_path }} -v --tb=short -q 2>&1
+  ```
+  If {{ test_path }} is empty, run: `python -m pytest tests/ -v --tb=short -q`
+
+  ### Mobile (Flutter/Dart)
+  ```bash
+  cd ~/Sync/work/RiseRally/src/mobile
+  flutter test {{ test_path }} --reporter compact 2>&1
+  ```
+  If {{ test_path }} is empty, run: `flutter test --reporter compact`
+
+  ### ML Engine (Python)
+  ```bash
+  cd ~/Sync/work/RiseRally/src/ml_engine
+  python -m pytest {{ test_path }} -v --tb=short -q 2>&1
+  ```
+  If {{ test_path }} is empty, run: `python -m pytest tests/ -v --tb=short -q`
+
+  ### All Services
+  Run backend, mobile, and ml_engine tests sequentially. Report per-service results.
+
+  ## Report Format
+  After running tests, report:
+  1. **Pass/Fail Summary**: Total passed, failed, skipped, errors
+  2. **Failed Tests**: List each failure with file, test name, and error summary
+  3. **Performance**: Note any tests taking > 5 seconds (potential slow test smell)
+  4. **Recommendation**: Whether the codebase is safe to proceed with further changes
+
+prompt: "Run and validate tests for {{ service }}"
+
+retry:
+  max_retries: 1
+  checks:
+    - type: shell
+      command: "echo 'Test run completed'"
