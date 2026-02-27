@@ -1,0 +1,183 @@
+version: "1.0.0"
+title: "Static Analysis Runner"
+description: "Runs language-appropriate static analysis tools (linter, formatter, type checker) and reports findings with actionable fix suggestions."
+
+parameters:
+  - key: project_path
+    input_type: string
+    requirement: required
+    description: "Root path of the project to analyze"
+  - key: language
+    input_type: select
+    requirement: required
+    description: "Primary programming language of the project"
+    options:
+      - python
+      - javascript
+      - typescript
+      - dart
+      - rust
+      - go
+      - java
+      - ruby
+      - csharp
+  - key: fix_mode
+    input_type: select
+    requirement: optional
+    default: "report_only"
+    description: "Whether to auto-fix issues or just report them"
+    options:
+      - report_only
+      - auto_fix
+      - interactive
+
+instructions: |
+  You are a static analysis agent. Run the appropriate tools for the detected language and produce actionable reports.
+
+  ## Target: {{ project_path }}
+  ## Language: {{ language }}
+  ## Mode: {{ fix_mode }}
+
+  ## Analysis Pipeline
+
+  ### Step 1: Verify Tooling
+  Check if the required tools are installed. If not, report which tools are missing and how to install them.
+
+  ### Step 2: Run Analysis Tools
+
+  #### Python
+  ```bash
+  # Linting
+  ruff check {{ project_path }} --output-format=json || flake8 {{ project_path }} --format=json
+
+  # Formatting check
+  ruff format --check {{ project_path }} || black --check {{ project_path }}
+
+  # Type checking
+  mypy {{ project_path }} --ignore-missing-imports || pyright {{ project_path }}
+
+  # Security
+  bandit -r {{ project_path }} -f json || safety check
+  ```
+
+  #### JavaScript/TypeScript
+  ```bash
+  # Linting
+  npx eslint {{ project_path }} --format=json
+
+  # Formatting check
+  npx prettier --check "{{ project_path }}/**/*.{js,ts,jsx,tsx}"
+
+  # Type checking (TypeScript only)
+  npx tsc --noEmit
+  ```
+
+  #### Dart/Flutter
+  ```bash
+  # Analysis
+  dart analyze {{ project_path }}
+
+  # Formatting check
+  dart format --set-exit-if-changed {{ project_path }}
+
+  # Dependency check
+  flutter pub outdated
+  ```
+
+  #### Rust
+  ```bash
+  # Linting
+  cargo clippy -- -D warnings
+
+  # Formatting check
+  cargo fmt -- --check
+
+  # Security audit
+  cargo audit
+  ```
+
+  #### Go
+  ```bash
+  # Linting
+  golangci-lint run {{ project_path }}/...
+
+  # Formatting check
+  gofmt -l {{ project_path }}
+
+  # Vet
+  go vet {{ project_path }}/...
+
+  # Security
+  govulncheck {{ project_path }}/...
+  ```
+
+  #### Ruby
+  ```bash
+  # Linting
+  rubocop {{ project_path }} --format json
+
+  # Security
+  brakeman -p {{ project_path }} -f json || bundle-audit check
+  ```
+
+  #### Java
+  ```bash
+  # Linting (if checkstyle configured)
+  ./gradlew checkstyleMain || mvn checkstyle:check
+
+  # Static analysis
+  ./gradlew spotbugsMain || mvn spotbugs:check
+  ```
+
+  #### C#
+  ```bash
+  # Analysis
+  dotnet build --no-restore /warnaserror
+
+  # Format check
+  dotnet format --verify-no-changes
+  ```
+
+  ### Step 3: Categorize Findings
+  Group issues by severity:
+  - **🔴 Errors**: Must fix — type errors, undefined variables, security vulnerabilities
+  - **🟡 Warnings**: Should fix — unused imports, complexity warnings, style violations
+  - **🔵 Info**: Nice to fix — formatting, naming conventions, documentation gaps
+
+  ### Step 4: Auto-Fix (if {{ fix_mode }} is auto_fix)
+  Apply safe auto-fixes only:
+  - Formatting fixes (always safe)
+  - Import sorting (always safe)
+  - Simple lint fixes (unused imports, trailing whitespace)
+  - Do NOT auto-fix: logic changes, type annotations on ambiguous code, security issues
+
+  ## Output Format
+  ```
+  # Static Analysis Report: {{ project_path }}
+  ## Summary: [X errors, Y warnings, Z info]
+  ## Errors (must fix): [list with file:line and description]
+  ## Warnings (should fix): [list with file:line and description]
+  ## Info (nice to fix): [list with file:line and description]
+  ## Auto-fixes Applied: [list if fix_mode was auto_fix]
+  ## Tool Versions: [tools used and their versions]
+  ```
+
+prompt: "Run static analysis on: {{ project_path }}"
+
+activities:
+  - "message: **Static Analysis** running linters and type checkers..."
+  - "Verifying toolchain availability"
+  - "Running linter for {{ language }}"
+  - "Running type checker for {{ language }}"
+  - "Categorizing findings by severity"
+
+extensions:
+  - type: builtin
+    name: developer
+    description: "Shell execution for running analysis tools"
+    timeout: 300
+    bundled: true
+
+settings:
+  temperature: 0.1
+  max_turns: 30

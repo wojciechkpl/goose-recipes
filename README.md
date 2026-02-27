@@ -1,80 +1,162 @@
 # Goose Recipes
 
-A collection of specialized [Goose](https://github.com/block/goose) agent recipes for software development workflows. These recipes enforce **Test-Driven Development**, **code modularity**, and **language-specific best practices** across full-stack projects.
+A collection of specialized [Goose](https://github.com/block/goose) agent recipes for software development workflows. These recipes enforce **Test-Driven Development**, **code modularity**, and **language-specific best practices**.
 
-## Overview
+## Repository Structure
 
-This recipe system uses a **hub-and-spoke architecture** — four main agent recipes that can delegate to three shared subrecipes for cross-cutting concerns.
+This repo contains two sets of recipes:
+
+1. **Project-Specific** (root `/`) — Tailored for RiseRally (FastAPI + Flutter + PyTorch)
+2. **General-Purpose** (`general/`) — Language-agnostic, works with any project
 
 ```
-┌─────────────────────┐     ┌──────────────────────┐
-│ Solution Architect  │◄───►│  Refactoring Agent   │
-│  (system design)    │     │  (code improvement)  │
-└────────┬────────────┘     └──────────┬───────────┘
-         │                             │
-         ▼                             ▼
-┌─────────────────────┐     ┌──────────────────────┐
-│   AI Researcher     │◄───►│  Data Exploration    │
-│  (ML experiments)   │     │  (data analysis)     │
-└─────────────────────┘     └──────────────────────┘
-         │                             │
-         └──────────┬──────────────────┘
-                    ▼
-        ┌───────────────────────┐
-        │    Shared Subrecipes  │
-        │  • TDD Workflow       │
-        │  • Code Review        │
-        │  • Test Validation    │
-        └───────────────────────┘
+goose-recipes/
+├── README.md
+│
+├── # ── Project-Specific (RiseRally) ──────────
+├── solution-architect.yaml
+├── ai-researcher.yaml
+├── data-exploration.yaml
+├── refactoring-agent.yaml
+├── subrecipes/
+│   ├── tdd-workflow.yaml
+│   ├── code-review.yaml
+│   └── test-validation.yaml
+│
+└── # ── General-Purpose ───────────────────────
+    general/
+    ├── code-reviewer.yaml
+    ├── security-auditor.yaml
+    ├── documentation-agent.yaml
+    ├── debugging-agent.yaml
+    ├── performance-optimizer.yaml
+    ├── api-designer.yaml
+    ├── dependency-auditor.yaml
+    ├── project-bootstrapper.yaml
+    └── subrecipes/
+        ├── language-detection.yaml
+        ├── static-analysis.yaml
+        ├── git-best-practices.yaml
+        └── tdd-generic.yaml
 ```
 
-## Recipes
+---
+
+## General-Purpose Recipes
+
+These recipes work with **any project** in any language. They auto-detect your tech stack and adapt their behavior accordingly.
 
 ### Main Agents
 
-| Recipe | File | Purpose | Temperature |
-|--------|------|---------|-------------|
-| **Solution Architect** | `solution-architect.yaml` | System design, ADRs, interface contracts, implementation planning | 0.3 |
-| **AI Researcher** | `ai-researcher.yaml` | ML research, experiments, prototyping, evaluation | 0.4 |
-| **Data Exploration** | `data-exploration.yaml` | Data profiling, analysis, notebooks, quality assessment | 0.3 |
-| **Refactoring Agent** | `refactoring-agent.yaml` | Code improvement with strict TDD discipline | 0.2 |
+| Recipe | File | Purpose | Temp |
+|--------|------|---------|------|
+| **Code Reviewer** | `general/code-reviewer.yaml` | Comprehensive code review: correctness, security, performance, maintainability | 0.3 |
+| **Security Auditor** | `general/security-auditor.yaml` | OWASP Top 10, secret detection, dependency CVEs, infrastructure review | 0.2 |
+| **Documentation Agent** | `general/documentation-agent.yaml` | API docs, inline docs, READMEs, architecture diagrams, changelogs | 0.3 |
+| **Debugging Agent** | `general/debugging-agent.yaml` | Scientific debugging: observe → hypothesize → test → fix → verify | 0.2 |
+| **Performance Optimizer** | `general/performance-optimizer.yaml` | Profile → analyze → optimize → validate (DB, API, memory, rendering) | 0.2 |
+| **API Designer** | `general/api-designer.yaml` | REST/GraphQL/gRPC design with proper HTTP semantics and OpenAPI specs | 0.3 |
+| **Dependency Auditor** | `general/dependency-auditor.yaml` | Vulnerability scanning, license compliance, update planning, size analysis | 0.1 |
+| **Project Bootstrapper** | `general/project-bootstrapper.yaml` | Scaffold new projects with CI/CD, testing, Docker, linting setup | 0.2 |
 
 ### Shared Subrecipes
 
 | Subrecipe | File | Purpose |
 |-----------|------|---------|
-| **TDD Workflow** | `subrecipes/tdd-workflow.yaml` | Red-Green-Refactor cycle enforcement |
-| **Code Review** | `subrecipes/code-review.yaml` | Automated code quality review |
-| **Test Validation** | `subrecipes/test-validation.yaml` | Test suite execution and reporting |
+| **Language Detection** | `general/subrecipes/language-detection.yaml` | Auto-detect project language, framework, toolchain |
+| **Static Analysis** | `general/subrecipes/static-analysis.yaml` | Run linters, formatters, type checkers per language |
+| **Git Best Practices** | `general/subrecipes/git-best-practices.yaml` | Conventional commits, PR prep, branch hygiene, hooks |
+| **TDD Generic** | `general/subrecipes/tdd-generic.yaml` | Red-Green-Refactor cycle for any language |
 
-## Cross-Delegation Matrix
+### Supported Languages
 
-| Recipe | Can delegate to |
-|--------|-----------------|
-| **Solution Architect** | Refactoring Agent, AI Researcher, Data Exploration + all 3 subrecipes |
-| **AI Researcher** | Data Exploration, Solution Architect + all 3 subrecipes |
-| **Data Exploration** | AI Researcher, Solution Architect + TDD + Test Validation |
-| **Refactoring Agent** | Solution Architect + all 3 subrecipes |
+All general recipes support these languages (auto-detected):
 
-## Enforced Practices
+| Language | Linter | Formatter | Type Checker | Test Runner |
+|----------|--------|-----------|-------------|-------------|
+| Python | ruff / flake8 | ruff / black | mypy / pyright | pytest |
+| TypeScript | eslint | prettier | tsc | jest / vitest |
+| JavaScript | eslint | prettier | — | jest / vitest |
+| Dart/Flutter | dart analyze | dart format | dart analyzer | flutter_test |
+| Rust | clippy | rustfmt | (built-in) | cargo test |
+| Go | golangci-lint | gofmt | (built-in) | go test |
+| Java | checkstyle | google-java-format | (compiler) | JUnit 5 |
+| Ruby | rubocop | rubocop | sorbet | RSpec |
+| C# | roslyn analyzers | dotnet format | (compiler) | xUnit / NUnit |
 
-| Practice | How enforced |
+### Cross-Delegation Map
+
+```
+Code Reviewer ──→ Language Detection, Static Analysis
+Security Auditor ──→ Language Detection, Static Analysis
+Documentation Agent ──→ Language Detection
+Debugging Agent ──→ Language Detection, TDD Generic, Static Analysis
+Performance Optimizer ──→ Language Detection, TDD Generic, Static Analysis
+API Designer ──→ Language Detection, TDD Generic, Code Reviewer
+Dependency Auditor ──→ Language Detection
+Project Bootstrapper ──→ Language Detection, TDD Generic, Git Best Practices
+```
+
+---
+
+## Project-Specific Recipes (RiseRally)
+
+These recipes are tailored for the RiseRally fitness platform (FastAPI + Flutter + PyTorch).
+
+### Main Agents
+
+| Recipe | File | Purpose | Temp |
+|--------|------|---------|------|
+| **Solution Architect** | `solution-architect.yaml` | System design, ADRs, interface contracts | 0.3 |
+| **AI Researcher** | `ai-researcher.yaml` | ML research, experiments, prototyping | 0.4 |
+| **Data Exploration** | `data-exploration.yaml` | Data profiling, analysis, notebooks | 0.3 |
+| **Refactoring Agent** | `refactoring-agent.yaml` | Code improvement with strict TDD | 0.2 |
+
+### Shared Subrecipes
+
+| Subrecipe | File | Purpose |
+|-----------|------|---------|
+| **TDD Workflow** | `subrecipes/tdd-workflow.yaml` | Red-Green-Refactor (Python/Dart/SQL) |
+| **Code Review** | `subrecipes/code-review.yaml` | Quality review for RiseRally patterns |
+| **Test Validation** | `subrecipes/test-validation.yaml` | Test suite execution |
+
+---
+
+## Best Practices Enforced
+
+| Practice | How Enforced |
 |----------|-------------|
-| **TDD** | Shared `tdd-workflow` subrecipe with retry logic — tests must pass |
-| **Language best practices** | Per-language checklists (Python PEP 484/604, Dart Effective Dart) |
+| **TDD** | Red-Green-Refactor subrecipes with retry logic — tests MUST pass |
 | **Modularity** | Hard limits: max 400 lines/file, 30 lines/function, 7 public methods/class |
-| **Correctness** | `test-validation` subrecipe + `retry` blocks on Refactoring and TDD |
-| **Code quality** | `code-review` subrecipe with language-specific checklists |
+| **Type Safety** | Language-appropriate type checkers run via static-analysis subrecipe |
+| **Security** | OWASP Top 10 checks, secret detection, dependency CVE scanning |
+| **Git Hygiene** | Conventional Commits, PR templates, pre-commit hooks |
+| **Documentation** | API docs, inline docs, architecture diagrams (Mermaid) |
+| **Performance** | Measure-first methodology, benchmark tests, profiling |
+| **Dependencies** | Vulnerability audits, license compliance, unused detection |
+
+---
 
 ## Usage
 
 ### Run from CLI
 
 ```bash
-goose run --recipe recipes/solution-architect.yaml
-goose run --recipe recipes/ai-researcher.yaml
-goose run --recipe recipes/data-exploration.yaml
-goose run --recipe recipes/refactoring-agent.yaml
+# General-purpose (any project)
+goose run --recipe general/code-reviewer.yaml
+goose run --recipe general/security-auditor.yaml
+goose run --recipe general/debugging-agent.yaml
+goose run --recipe general/performance-optimizer.yaml
+goose run --recipe general/api-designer.yaml
+goose run --recipe general/dependency-auditor.yaml
+goose run --recipe general/documentation-agent.yaml
+goose run --recipe general/project-bootstrapper.yaml
+
+# Project-specific (RiseRally)
+goose run --recipe solution-architect.yaml
+goose run --recipe ai-researcher.yaml
+goose run --recipe data-exploration.yaml
+goose run --recipe refactoring-agent.yaml
 ```
 
 ### Import into Goose Desktop
@@ -84,27 +166,13 @@ goose run --recipe recipes/refactoring-agent.yaml
 
 ### Customize for Your Project
 
-The recipes reference RiseRally-specific paths. To adapt for your project:
+To create project-specific versions of the general recipes:
+1. Copy the `general/` recipe to your project root
+2. Update the **instructions** section with your project context
+3. Hardcode paths for your project structure
+4. Adjust the `retry.checks` commands to your test runners
 
-1. Update the **System Context** sections with your tech stack
-2. Change file paths in `instructions` to match your project structure
-3. Adjust `retry.checks` commands to your test runners
-4. Modify language-specific best practices as needed
-
-## File Structure
-
-```
-goose-recipes/
-├── README.md
-├── solution-architect.yaml      # System design & architecture
-├── ai-researcher.yaml           # ML research & experimentation
-├── data-exploration.yaml        # Data profiling & analysis
-├── refactoring-agent.yaml       # Code improvement with TDD
-└── subrecipes/
-    ├── tdd-workflow.yaml        # Red-Green-Refactor cycle
-    ├── code-review.yaml         # Automated code review
-    └── test-validation.yaml     # Test suite runner
-```
+---
 
 ## License
 

@@ -1,0 +1,99 @@
+version: "1.0.0"
+title: "Language & Framework Detection"
+description: "Auto-detects the project's programming language(s), framework(s), package manager, test runner, and linter. Provides structured context for other recipes to adapt their behavior."
+
+parameters:
+  - key: project_path
+    input_type: string
+    requirement: required
+    description: "Root path of the project to analyze"
+
+instructions: |
+  You are a project analysis agent. Your job is to inspect a project directory and produce a structured report of its technology stack.
+
+  ## Target: {{ project_path }}
+
+  ## Detection Steps
+
+  ### Step 1: Identify Languages
+  Scan for these indicators (check in order of reliability):
+  1. **Config files** (most reliable):
+     - `pyproject.toml`, `setup.py`, `setup.cfg`, `Pipfile` → Python
+     - `package.json` → JavaScript/TypeScript
+     - `tsconfig.json` → TypeScript
+     - `pubspec.yaml` → Dart/Flutter
+     - `Cargo.toml` → Rust
+     - `go.mod` → Go
+     - `pom.xml`, `build.gradle` → Java/Kotlin
+     - `*.csproj`, `*.sln` → C#/.NET
+     - `Gemfile` → Ruby
+     - `mix.exs` → Elixir
+     - `Package.swift` → Swift
+  2. **Source file extensions** (secondary): count by extension to identify primary/secondary languages
+  3. **Dockerfile / docker-compose** (tertiary): look for base images
+
+  ### Step 2: Identify Frameworks
+  Based on detected language, check for:
+  - **Python**: FastAPI, Django, Flask, Starlette, SQLAlchemy, Pydantic, PyTorch, TensorFlow, pandas
+  - **JavaScript/TypeScript**: React, Next.js, Vue, Angular, Express, NestJS, Svelte
+  - **Dart**: Flutter (check `pubspec.yaml` for flutter SDK)
+  - **Rust**: Actix, Axum, Rocket, Tokio
+  - **Go**: Gin, Echo, Fiber, Chi
+  - **Java/Kotlin**: Spring Boot, Ktor, Android
+  - **Ruby**: Rails, Sinatra
+  - **C#**: ASP.NET, Entity Framework, Blazor
+
+  ### Step 3: Identify Tooling
+  Detect:
+  - **Package manager**: pip/poetry/uv, npm/yarn/pnpm/bun, pub, cargo, go mod, maven/gradle
+  - **Test runner**: pytest, jest/vitest, flutter_test, cargo test, go test, JUnit, RSpec
+  - **Linter/Formatter**: ruff/flake8/black, eslint/prettier, dart analyze, clippy/rustfmt, golangci-lint
+  - **Type checker**: mypy/pyright, tsc, dart analyzer
+  - **Build tool**: make, just, nx, turbo, gradle
+  - **CI/CD**: GitHub Actions, GitLab CI, Jenkins, CircleCI (check `.github/`, `.gitlab-ci.yml`, `Jenkinsfile`)
+  - **Containerization**: Docker, docker-compose, Kubernetes manifests
+
+  ### Step 4: Identify Architecture Patterns
+  Look for:
+  - **Monorepo vs single project**: Multiple `package.json`/`pyproject.toml` files, workspace configs
+  - **Clean Architecture**: `domain/`, `data/`, `presentation/` directories
+  - **MVC**: `models/`, `views/`, `controllers/`
+  - **Microservices**: Multiple `Dockerfile`s, docker-compose with multiple services
+  - **Feature-based**: `features/`, `modules/` directories
+
+  ## Output Format
+  Produce a structured report:
+  ```
+  # Project Stack Report: {{ project_path }}
+  ## Languages: [primary, secondary...]
+  ## Frameworks: [list with versions if detectable]
+  ## Package Manager: [name]
+  ## Test Runner: [name + command to run tests]
+  ## Linter: [name + command to lint]
+  ## Formatter: [name + command to format]
+  ## Type Checker: [name + command if available]
+  ## Build Tool: [name + commands]
+  ## CI/CD: [platform if detected]
+  ## Architecture: [pattern detected]
+  ## Directory Structure: [key directories and their roles]
+  ```
+
+prompt: "Detect the technology stack for project at: {{ project_path }}"
+
+activities:
+  - "message: **Language Detection** scanning project structure..."
+  - "Scanning config files for language indicators"
+  - "Identifying frameworks and dependencies"
+  - "Detecting toolchain (test runner, linter, formatter)"
+  - "Analyzing architecture patterns"
+
+extensions:
+  - type: builtin
+    name: developer
+    description: "File system access to read project files and config"
+    timeout: 120
+    bundled: true
+
+settings:
+  temperature: 0.1
+  max_turns: 20
