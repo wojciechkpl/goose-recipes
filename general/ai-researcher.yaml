@@ -919,23 +919,36 @@ instructions: |
   ### Phase: IMPLEMENTATION
   If {{ project_path }} is provided:
   1. **Detect the stack** using the **language-detection** subrecipe
-  2. **Follow TDD** using the **tdd-generic** subrecipe for ALL components:
+  2. **Set up Docker environment** using the **docker_ml_environment** subrecipe:
+     - Delegate to `docker_ml_environment` with `setup_scope: full_stack`
+     - All training, serving, and evaluation MUST run inside containers
+     - GPU support via NVIDIA Container Toolkit (if applicable)
+     - MLflow server containerized alongside training services
+     - Use multi-stage Dockerfiles: base → training → serving → notebook
+     - Generate `docker-compose.yaml`, `docker-compose.gpu.yaml`, `docker-compose.dev.yaml`
+     - Add `Makefile` targets: `make train`, `make serve`, `make test`, `make notebook`
+     - **Rationale**: Containerization ensures reproducibility across machines, eliminates
+       "works on my machine" issues, and matches production deployment patterns
+  3. **Follow TDD** using the **tdd-generic** subrecipe for ALL components:
      - Test FIRST, then implement — no exceptions
-  3. **Implementation order**:
-     a. Data loading and preprocessing (with data validation)
-     b. Model architecture (matching mathematical formulation EXACTLY — reference equations)
-     c. Loss function (separate module — reference derivation)
-     d. Training loop with logging (MLflow if {{ mlflow_experiment }} is set, else tensorboard)
-     e. Evaluation pipeline (all metrics from experimental design)
-     f. Experiment runner with config management (Hydra or dataclass)
-     g. Reproducibility utilities (seeding, deterministic ops)
-     h. **MLflow integration** (if {{ mlflow_experiment }} is set):
+     - Run tests inside containers: `docker compose run --rm test pytest`
+  4. **Implementation order**:
+     a. Docker infrastructure (Dockerfiles + compose + Makefile) — **FIRST**
+     b. Data loading and preprocessing (with data validation)
+     c. Model architecture (matching mathematical formulation EXACTLY — reference equations)
+     d. Loss function (separate module — reference derivation)
+     e. Training loop with logging (MLflow if {{ mlflow_experiment }} is set, else tensorboard)
+     f. Evaluation pipeline (all metrics from experimental design)
+     g. Experiment runner with config management (Hydra or dataclass)
+     h. Reproducibility utilities (seeding, deterministic ops)
+     i. **MLflow integration** (if {{ mlflow_experiment }} is set):
         - Delegate to `mlflow_tracking` with `tracking_scope: full_setup`
         - Install tracking modules: `mlflow_config.py`, `metrics.py`, `artifacts.py`, `registry.py`
         - Generate HPO configuration aligned with experimental design
         - Set up Model Registry for model lifecycle management
         - Set up artifact pipeline for model checkpoints and datasets
-  4. **Code quality requirements**:
+        - MLflow tracking server runs in its own container (via docker_ml_environment)
+  5. **Code quality requirements**:
      - Type hints on ALL functions (`torch.Tensor`, `np.ndarray`, generics)
      - Docstrings reference equations: `"Implements Eq. (3) from the formulation"`
      - Separate model definition from training logic
@@ -1147,6 +1160,10 @@ sub_recipes:
   - name: "literature_review"
     path: "./subrecipes/literature-review.yaml"
     description: "PRISMA-inspired systematic literature review with structured extraction and synthesis"
+
+  - name: "docker_ml_environment"
+    path: "./subrecipes/docker-ml-environment.yaml"
+    description: "Set up fully containerized ML dev environment: Dockerfiles, compose, GPU support, MLflow server, Makefile"
 
   - name: "language_detection"
     path: "./subrecipes/language-detection.yaml"

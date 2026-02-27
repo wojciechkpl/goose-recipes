@@ -81,7 +81,7 @@ instructions: |
 
   ### 2. Naming Conventions
   ```
-  Experiment names:  {project}/{task}  (e.g. "riselrally/recommendations")
+  Experiment names:  {project}/{task}  (e.g. "my-project/recommendations")
   Run names:         {experiment}_{variant}_{timestamp}
   Tags:              mlflow.runName, task_type=[train|eval|sweep|data-prep|analysis]
                      variant=[baseline|ablation|sweep|final|debug]
