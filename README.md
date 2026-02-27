@@ -42,11 +42,11 @@ goose-recipes/
     │   ├── git-best-practices.yaml
     │   └── tdd-generic.yaml
     └── languages/                  # Language-specific deep experts
-        ├── python-agent.yaml       # Python 3.10+ / pytest / type system
-        ├── flutter-agent.yaml      # Flutter/Dart / Riverpod / go_router
-        ├── rust-agent.yaml         # Rust / ownership / tokio / cargo
-        ├── postgresql-agent.yaml   # PostgreSQL / schema / query optimization
-        └── bash-agent.yaml         # Bash / shellcheck / bats-core
+        ├── python-expert.yaml      # Python 3.10+ / pytest / type system
+        ├── flutter-expert.yaml     # Flutter/Dart / Riverpod / go_router
+        ├── rust-expert.yaml        # Rust / ownership / tokio / cargo
+        ├── postgresql-expert.yaml  # PostgreSQL / schema / query optimization
+        └── bash-expert.yaml        # Bash / shellcheck / bats-core
 ```
 
 ---
@@ -89,23 +89,23 @@ Deep-expert agents for individual languages. Each one encodes **idiomatic patter
 
 | Agent | File | Lines | Key Expertise |
 |-------|------|-------|--------------|
-| **Python Expert** | `general/languages/python-agent.yaml` | 550 | PEP 484/604/612, async/await, pytest, dataclasses, Pydantic, FastAPI/Django/PyTorch patterns |
-| **Flutter Expert** | `general/languages/flutter-agent.yaml` | 530 | Dart 3.x (sealed classes, records, patterns), Riverpod, go_router, clean architecture, mocktail |
-| **Rust Expert** | `general/languages/rust-agent.yaml` | 463 | Ownership/lifetimes, thiserror/anyhow, tokio async, traits, zero-cost abstractions, property testing |
-| **PostgreSQL Expert** | `general/languages/postgresql-agent.yaml` | 516 | Schema design (3NF+), EXPLAIN ANALYZE, indexing (B-tree/GIN/BRIN), RLS, partitioning, CTEs, window functions |
-| **Bash Expert** | `general/languages/bash-agent.yaml` | 648 | `set -euo pipefail`, shellcheck compliance, proper quoting, bats-core testing, CI/CD patterns, Makefile integration |
+| **Python Expert** | `general/languages/python-expert.yaml` | 459 | PEP 484/604/612/695, async/await, pytest, dataclasses, Pydantic, FastAPI/Django/PyTorch patterns |
+| **Flutter Expert** | `general/languages/flutter-expert.yaml` | 537 | Dart 3.x (sealed classes, records, patterns), Riverpod, go_router, clean architecture, mocktail, golden tests |
+| **Rust Expert** | `general/languages/rust-expert.yaml` | 485 | Ownership/lifetimes, thiserror/anyhow, tokio async, traits, zero-cost abstractions, property testing, unsafe audit |
+| **PostgreSQL Expert** | `general/languages/postgresql-expert.yaml` | 550 | Schema design (3NF+), EXPLAIN ANALYZE, indexing (B-tree/GIN/BRIN), RLS, partitioning, CTEs, window functions |
+| **Bash Expert** | `general/languages/bash-expert.yaml` | 618 | `set -euo pipefail`, shellcheck compliance, proper quoting, bats-core testing, CI/CD patterns, security hardening |
 
 ### Language Agent Features
 
 | Feature | Python | Flutter | Rust | PostgreSQL | Bash |
 |---------|--------|---------|------|------------|------|
-| **Type system** | PEP 484/604 + mypy | Dart strong types + sealed | Ownership + lifetimes | Column types + constraints | ShellCheck |
-| **Testing** | pytest + parametrize | flutter_test + mocktail | cargo test + proptest | pgTAP + app-level | bats-core |
-| **Linting** | ruff + mypy | dart analyze | clippy | N/A | shellcheck |
-| **Error handling** | Custom hierarchy | Result<T> pattern | thiserror/anyhow | Constraints + RLS | trap + die() |
-| **Performance** | Profiling, generators, slots | const widgets, RepaintBoundary | Zero-cost, iterators, SIMD | EXPLAIN ANALYZE, indexes | Parameter expansion |
-| **Modularity** | 400 lines/file, 30 lines/fn | 300 lines/file, 30 lines/build | 500 lines/mod, 40 lines/fn | One migration per change | 300 lines/script, 30 lines/fn |
-| **TDD enforced** | ✅ retry block | ✅ retry block | ✅ retry block | ✅ via app-level | ✅ shellcheck retry |
+| **Type system** | PEP 484/604/695 + mypy strict | Dart sealed + records + patterns | Ownership + lifetimes + traits | Column types + constraints + domains | ShellCheck SC rules |
+| **Testing** | pytest + parametrize + hypothesis | flutter_test + mocktail + golden | cargo test + rstest + proptest | pgTAP + migration testing | bats-core + mocking |
+| **Linting** | ruff + mypy --strict | dart analyze | clippy -D warnings | N/A | shellcheck |
+| **Error handling** | Custom hierarchy + chaining | sealed Result\<T\> pattern | thiserror (lib) / anyhow (bin) | CHECK + RLS + exclusion | trap EXIT + cleanup |
+| **Performance** | slots, polars, generators, cProfile | const widgets, RepaintBoundary, select() | Zero-cost iterators, criterion benchmarks | EXPLAIN ANALYZE, index strategy | Parameter expansion, process substitution |
+| **Modularity** | 400 lines/file, 30 lines/fn | 300 lines/file, 80 lines/build | 500 lines/mod, 40 lines/fn | One migration per change | 200 lines/script, 50 lines/fn |
+| **TDD enforced** | ✅ retry block | ✅ retry block | ✅ retry block | ✅ via app-level tests | ✅ shellcheck + bats retry |
 
 ### Cross-Delegation
 
@@ -117,11 +117,11 @@ General Agent ──→ Language Agent
   Debugging Agent ──→ Python/Rust Agent (for language-specific debugging tools)
 
 Language Agent ──→ Shared Subrecipes
-  Python Agent ──→ TDD Generic, Static Analysis, Code Reviewer
-  Flutter Agent ──→ TDD Generic, Static Analysis, Code Reviewer
-  Rust Agent ──→ TDD Generic, Static Analysis, Code Reviewer
-  PostgreSQL Agent ──→ TDD Generic, Static Analysis, Security Auditor
-  Bash Agent ──→ TDD Generic, Static Analysis, Code Reviewer
+  Python Expert ──→ TDD Generic, Static Analysis, Code Reviewer, Debugging Agent
+  Flutter Expert ──→ TDD Generic, Static Analysis, Code Reviewer, Debugging Agent
+  Rust Expert ──→ TDD Generic, Static Analysis, Code Reviewer, Debugging Agent
+  PostgreSQL Expert ──→ Security Auditor, Performance Optimizer, Code Reviewer
+  Bash Expert ──→ Static Analysis, Code Reviewer, Security Auditor
 ```
 
 ---
@@ -234,11 +234,11 @@ goose run --recipe general/documentation-agent.yaml
 goose run --recipe general/project-bootstrapper.yaml
 
 # Language-specific experts
-goose run --recipe general/languages/python-agent.yaml
-goose run --recipe general/languages/flutter-agent.yaml
-goose run --recipe general/languages/rust-agent.yaml
-goose run --recipe general/languages/postgresql-agent.yaml
-goose run --recipe general/languages/bash-agent.yaml
+goose run --recipe general/languages/python-expert.yaml
+goose run --recipe general/languages/flutter-expert.yaml
+goose run --recipe general/languages/rust-expert.yaml
+goose run --recipe general/languages/postgresql-expert.yaml
+goose run --recipe general/languages/bash-expert.yaml
 
 # Project-specific (RiseRally)
 goose run --recipe solution-architect.yaml
