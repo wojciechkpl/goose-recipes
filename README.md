@@ -21,6 +21,7 @@ goose-recipes/
 │   ├── api-designer.yaml                 # REST/GraphQL/gRPC with OpenAPI specs
 │   ├── dependency-auditor.yaml           # Vulnerabilities, licenses, unused, size analysis
 │   ├── project-bootstrapper.yaml         # Scaffold projects with CI/CD, Docker, testing
+│   ├── ux-designer.yaml                  # UX design: wireframes, a11y, design systems, heuristics
 │   │
 │   ├── subrecipes/                       # Shared building blocks (delegated to by main recipes)
 │   │   ├── language-detection.yaml       # Auto-detect language, framework, toolchain
@@ -31,7 +32,8 @@ goose-recipes/
 │   │   ├── arxiv-search.yaml             # arXiv API paper search with relevance ranking
 │   │   ├── citation-graph.yaml           # Semantic Scholar citation analysis (PageRank, clusters)
 │   │   ├── mlflow-tracking.yaml          # MLflow: params, metrics, artifacts, registry, HPO
-│   │   └── docker-ml-environment.yaml    # Containerized ML: Dockerfiles, compose, GPU, MLflow
+│   │   ├── docker-ml-environment.yaml    # Containerized ML: Dockerfiles, compose, GPU, MLflow
+│   │   └── design-system.yaml           # Design tokens, component inventory, consistency checks
 │   │
 │   └── languages/                        # Language-specific deep expert agents
 │       ├── python-expert.yaml            # Python 3.10+ / pytest / type system / FastAPI / PyTorch
@@ -56,6 +58,7 @@ goose-recipes/
 | **API Designer** | `general/api-designer.yaml` | REST/GraphQL/gRPC design with proper HTTP semantics and OpenAPI specs | 0.3 |
 | **Dependency Auditor** | `general/dependency-auditor.yaml` | Vulnerability scanning, license compliance, update planning, size analysis | 0.1 |
 | **Project Bootstrapper** | `general/project-bootstrapper.yaml` | Scaffold new projects with CI/CD, testing, Docker, linting setup | 0.2 |
+| **UX Designer** | `general/ux-designer.yaml` | User research, wireframes (ASCII/Mermaid), design systems, accessibility (WCAG 2.2), Nielsen's heuristics, interaction design, responsive specs, design handoff | 0.3 |
 
 ---
 
@@ -88,6 +91,7 @@ Building blocks that main recipes delegate to. Can also be used standalone.
 | **Citation Graph** | `general/subrecipes/citation-graph.yaml` | Semantic Scholar citation analysis — PageRank, clusters, velocity |
 | **MLflow Tracking** | `general/subrecipes/mlflow-tracking.yaml` | MLflow: params, metrics, artifacts, Model Registry, Optuna HPO |
 | **Docker ML Environment** | `general/subrecipes/docker-ml-environment.yaml` | Containerized ML: multi-stage Dockerfiles, compose, GPU, MLflow server |
+| **Design System** | `general/subrecipes/design-system.yaml` | Token audit, component inventory, magic value detection, consistency checks |
 
 ---
 
@@ -110,6 +114,7 @@ Recipes delegate to each other for complex workflows:
   │ • Debugging   │   │ • Rust       │    │ • MLflow Track  │
   │ • Performance │   │ • PostgreSQL │    │ • Docker ML Env │
   │ • API Design  │   │ • Bash       │    │ • Lit Review    │
+  │ • UX Designer │   │              │    │ • Design System │
   └───────┬───────┘   └──────┬───────┘    └────────┬────────┘
           │                   │                      │
           └───────────────────┼──────────────────────┘
@@ -139,6 +144,8 @@ Recipes delegate to each other for complex workflows:
 | **Dependencies** | Vulnerability audits, license compliance, unused detection |
 | **Scientific Rigor** | PRISMA lit review, IEEE citations, statistical significance testing |
 | **Mathematical Precision** | LaTeX notation conventions, derivations from first principles |
+| **Accessibility** | WCAG 2.2 AA audit, keyboard navigation, screen reader support, contrast verification |
+| **UX Quality** | Nielsen's 10 heuristics, JTBD user research, responsive specs, design token consistency |
 | **Reproducibility** | Docker containers, MLflow experiment tracking, seed management |
 
 ---
