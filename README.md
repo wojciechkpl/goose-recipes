@@ -25,6 +25,7 @@ goose-recipes/
 │
 └── # ── General-Purpose ───────────────────────
     general/
+    ├── ai-researcher.yaml
     ├── code-reviewer.yaml
     ├── security-auditor.yaml
     ├── documentation-agent.yaml
@@ -35,6 +36,7 @@ goose-recipes/
     ├── project-bootstrapper.yaml
     └── subrecipes/
         ├── language-detection.yaml
+        ├── literature-review.yaml
         ├── static-analysis.yaml
         ├── git-best-practices.yaml
         └── tdd-generic.yaml
@@ -50,6 +52,7 @@ These recipes work with **any project** in any language. They auto-detect your t
 
 | Recipe | File | Purpose | Temp |
 |--------|------|---------|------|
+| **AI/ML Researcher** | `general/ai-researcher.yaml` | Scientific ML research: lit review, tradeoff analysis, math formulations, Mermaid diagrams, citations | 0.3 |
 | **Code Reviewer** | `general/code-reviewer.yaml` | Comprehensive code review: correctness, security, performance, maintainability | 0.3 |
 | **Security Auditor** | `general/security-auditor.yaml` | OWASP Top 10, secret detection, dependency CVEs, infrastructure review | 0.2 |
 | **Documentation Agent** | `general/documentation-agent.yaml` | API docs, inline docs, READMEs, architecture diagrams, changelogs | 0.3 |
@@ -64,6 +67,7 @@ These recipes work with **any project** in any language. They auto-detect your t
 | Subrecipe | File | Purpose |
 |-----------|------|---------|
 | **Language Detection** | `general/subrecipes/language-detection.yaml` | Auto-detect project language, framework, toolchain |
+| **Literature Review** | `general/subrecipes/literature-review.yaml` | PRISMA-inspired systematic review with structured extraction |
 | **Static Analysis** | `general/subrecipes/static-analysis.yaml` | Run linters, formatters, type checkers per language |
 | **Git Best Practices** | `general/subrecipes/git-best-practices.yaml` | Conventional commits, PR prep, branch hygiene, hooks |
 | **TDD Generic** | `general/subrecipes/tdd-generic.yaml` | Red-Green-Refactor cycle for any language |
@@ -87,6 +91,7 @@ All general recipes support these languages (auto-detected):
 ### Cross-Delegation Map
 
 ```
+AI/ML Researcher ──→ Literature Review, Language Detection, TDD Generic, Static Analysis, Code Reviewer, Documentation Agent
 Code Reviewer ──→ Language Detection, Static Analysis
 Security Auditor ──→ Language Detection, Static Analysis
 Documentation Agent ──→ Language Detection
@@ -143,6 +148,7 @@ These recipes are tailored for the RiseRally fitness platform (FastAPI + Flutter
 
 ```bash
 # General-purpose (any project)
+goose run --recipe general/ai-researcher.yaml
 goose run --recipe general/code-reviewer.yaml
 goose run --recipe general/security-auditor.yaml
 goose run --recipe general/debugging-agent.yaml
