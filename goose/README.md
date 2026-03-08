@@ -16,7 +16,7 @@ goose-recipes/
 │   ├── code-reviewer.yaml                # Comprehensive code review
 │   ├── security-auditor.yaml             # OWASP Top 10, secrets, CVEs, infrastructure
 │   ├── documentation-agent.yaml          # API docs, inline docs, READMEs, Mermaid diagrams
-│   ├── debugging-agent.yaml              # Scientific debugging: observe → hypothesize → test → fix
+│   ├── debugger.yaml              # Scientific debugging: observe → hypothesize → test → fix
 │   ├── performance-optimizer.yaml        # Profile → analyze → optimize → validate
 │   ├── api-designer.yaml                 # REST/GraphQL/gRPC with OpenAPI specs
 │   ├── dependency-auditor.yaml           # Vulnerabilities, licenses, unused, size analysis
@@ -53,7 +53,7 @@ goose-recipes/
 | **Code Reviewer** | `general/code-reviewer.yaml` | Comprehensive code review: correctness, security, performance, maintainability | 0.3 |
 | **Security Auditor** | `general/security-auditor.yaml` | OWASP Top 10, secret detection, dependency CVEs, infrastructure review | 0.2 |
 | **Documentation Agent** | `general/documentation-agent.yaml` | API docs, inline docs, READMEs, architecture diagrams, changelogs | 0.3 |
-| **Debugging Agent** | `general/debugging-agent.yaml` | Scientific debugging: observe → hypothesize → test → fix → verify | 0.2 |
+| **Debugger** | `general/debugger.yaml` | Scientific debugging: observe → hypothesize → test → fix → verify | 0.2 |
 | **Performance Optimizer** | `general/performance-optimizer.yaml` | Profile → analyze → optimize → validate (DB, API, memory, rendering) | 0.2 |
 | **API Designer** | `general/api-designer.yaml` | REST/GraphQL/gRPC design with proper HTTP semantics and OpenAPI specs | 0.3 |
 | **Dependency Auditor** | `general/dependency-auditor.yaml` | Vulnerability scanning, license compliance, update planning, size analysis | 0.1 |

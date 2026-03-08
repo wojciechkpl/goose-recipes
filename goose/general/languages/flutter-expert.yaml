@@ -521,8 +521,8 @@ sub_recipes:
     path: "../code-reviewer.yaml"
     description: "Dart/Flutter-focused code review"
 
-  - name: "debugging_agent"
-    path: "../debugging-agent.yaml"
+  - name: "debugger"
+    path: "../debugger.yaml"
     description: "Scientific debugging for Flutter issues"
 
 retry:

@@ -390,7 +390,7 @@ instructions: |
   4. Ensure tests still pass
 
   ### debug
-  Delegate to **debugging-agent** with Python context.
+  Delegate to **debugger** with Python context.
 
   ### test
   1. Analyze current coverage: `pytest --cov --cov-report=term-missing`
@@ -443,8 +443,8 @@ sub_recipes:
     path: "../code-reviewer.yaml"
     description: "Python-focused code review"
 
-  - name: "debugging_agent"
-    path: "../debugging-agent.yaml"
+  - name: "debugger"
+    path: "../debugger.yaml"
     description: "Scientific debugging for Python issues"
 
 retry:

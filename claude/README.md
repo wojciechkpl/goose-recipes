@@ -7,46 +7,26 @@ Each agent is a Markdown file with YAML frontmatter that defines a focused subag
 ## Installation
 
 ### Option 1: Project-Level (recommended for teams)
-Copy agents into your project's `.claude/agents/` directory:
-
 ```bash
 # From your project root
-mkdir -p .claude/agents/languages .claude/agents/specialized
+mkdir -p .claude/agents/languages .claude/agents/specialized .claude/agents/subrecipes
 
-# Copy core agents
-cp /path/to/goose-recipes/claude/agents/*.md .claude/agents/
-
-# Copy language experts
-cp /path/to/goose-recipes/claude/agents/languages/*.md .claude/agents/languages/
-
-# Copy specialized agents
-cp /path/to/goose-recipes/claude/agents/specialized/*.md .claude/agents/specialized/
+# Copy all agents
+cp /path/to/agent-recipes/claude/agents/*.md .claude/agents/
+cp /path/to/agent-recipes/claude/agents/languages/*.md .claude/agents/languages/
+cp /path/to/agent-recipes/claude/agents/specialized/*.md .claude/agents/specialized/
+cp /path/to/agent-recipes/claude/agents/subrecipes/*.md .claude/agents/subrecipes/
 ```
 
 Then commit `.claude/agents/` to version control — your team gets the agents automatically.
 
 ### Option 2: User-Level (personal, all projects)
-Copy to `~/.claude/agents/` for availability across all projects:
-
 ```bash
-mkdir -p ~/.claude/agents/languages ~/.claude/agents/specialized
+mkdir -p ~/.claude/agents/languages ~/.claude/agents/specialized ~/.claude/agents/subrecipes
 cp claude/agents/*.md ~/.claude/agents/
 cp claude/agents/languages/*.md ~/.claude/agents/languages/
 cp claude/agents/specialized/*.md ~/.claude/agents/specialized/
-```
-
-### Option 3: One-Shot via CLI
-Use inline JSON for a single session:
-
-```bash
-claude --agents '{
-  "code-reviewer": {
-    "description": "Expert code reviewer. Use proactively after code changes.",
-    "prompt": "You are a senior code reviewer...",
-    "tools": ["Read", "Grep", "Glob", "Bash"],
-    "model": "sonnet"
-  }
-}'
+cp claude/agents/subrecipes/*.md ~/.claude/agents/subrecipes/
 ```
 
 ## Usage
@@ -105,6 +85,23 @@ claude agents
 |-------|-------|-------------|
 | `ai-researcher` | Opus | Literature review, ML solution design, tradeoff analysis, MLflow |
 | `ux-designer` | Sonnet | Journey mapping, wireframes, design systems, WCAG 2.2 audit |
+
+### Subrecipes (Shared Workflows)
+| Agent | Description |
+|-------|-------------|
+| `tdd-generic` | Language-agnostic Red-Green-Refactor cycle |
+| `language-detection` | Auto-detect project language, framework, toolchain |
+| `static-analysis` | Language-appropriate linting and type checking |
+| `git-best-practices` | Conventional commits, branch naming, PR hygiene |
+| `docker-ml-environment` | Containerized ML infrastructure with GPU support |
+| `mlflow-tracking` | ML experiment tracking, model registry, HPO |
+
+## Conventions
+
+See `CONVENTIONS.md` for global rules enforced across all agents:
+- TDD is mandatory for all code-writing agents
+- Shared severity scale (🔴🟠🟡🔵ℹ️) for all auditing agents
+- Naming conventions align with Goose recipes (see `shared/naming-conventions.md`)
 
 ## Key Differences from Goose Recipes
 

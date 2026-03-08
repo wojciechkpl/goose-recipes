@@ -121,10 +121,10 @@ The recipe will ask for:
 
 **Scenario**: A test is failing and you can't figure out why.
 
-### Run the Debugging Agent
+### Run the Debugger
 
 ```bash
-goose run --recipe ~/goose-recipes/general/debugging-agent.yaml
+goose run --recipe ~/goose-recipes/general/debugger.yaml
 ```
 
 ### Parameters

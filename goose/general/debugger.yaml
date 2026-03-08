@@ -1,5 +1,5 @@
 version: "1.0.0"
-title: "Debugging Agent"
+title: "Debugger"
 description: "Systematic debugging agent that follows scientific method: observe symptoms, form hypotheses, test them, and verify fixes. Handles runtime errors, logic bugs, performance regressions, and flaky tests across any language."
 
 parameters:

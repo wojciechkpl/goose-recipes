@@ -469,8 +469,8 @@ sub_recipes:
     path: "../code-reviewer.yaml"
     description: "Rust-focused code review"
 
-  - name: "debugging_agent"
-    path: "../debugging-agent.yaml"
+  - name: "debugger"
+    path: "../debugger.yaml"
     description: "Scientific debugging for Rust issues"
 
 retry:
