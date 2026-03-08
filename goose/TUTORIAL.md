@@ -17,10 +17,11 @@ A practical guide to using these recipes with the [Goose CLI](https://github.com
 9. [Use Case: Design a REST API](#9-use-case-design-a-rest-api)
 10. [Use Case: Audit Dependencies](#10-use-case-audit-dependencies)
 11. [Use Case: Refactor with a Language Expert](#11-use-case-refactor-with-a-language-expert)
-12. [Advanced: Chaining Recipes](#12-advanced-chaining-recipes)
-13. [Advanced: Team Setup with Shared Recipes](#13-advanced-team-setup-with-shared-recipes)
-14. [Advanced: Scheduled Recipes](#14-advanced-scheduled-recipes)
-15. [Recipe Reference](#15-recipe-reference)
+12. [Use Case: Design a User Onboarding Flow](#12-use-case-design-a-user-onboarding-flow)
+13. [Advanced: Chaining Recipes](#13-advanced-chaining-recipes)
+14. [Advanced: Team Setup with Shared Recipes](#14-advanced-team-setup-with-shared-recipes)
+15. [Advanced: Scheduled Recipes](#15-advanced-scheduled-recipes)
+16. [Recipe Reference](#16-recipe-reference)
 
 ---
 
@@ -493,7 +494,69 @@ goose run --recipe ~/goose-recipes/general/languages/bash-expert.yaml
 
 ---
 
-## 12. Advanced: Chaining Recipes
+## 12. Use Case: Design a User Onboarding Flow
+
+**Scenario**: You need to design a user onboarding flow for your app -- personas, journey maps, wireframes, design tokens, and accessibility compliance -- all produced as code-native artifacts.
+
+### Run the UX Designer
+
+```bash
+goose run --recipe ~/goose-recipes/general/ux-designer.yaml \
+  --params project_path=./my-app \
+  --params task_type=full_ux_process \
+  --params feature_name="User Onboarding" \
+  --params platform=web \
+  --params wcag_level=AA
+```
+
+### Parameters
+
+- **`project_path`**: Project root to analyze existing UI components and design patterns
+- **`task_type`**: `user_research`, `journey_map`, `information_architecture`, `wireframe`, `interaction_design`, `design_system`, `accessibility_audit`, `responsive_design`, `design_handoff`, or `full_ux_process`
+- **`feature_name`**: Name of the feature or flow being designed (e.g., `"User Onboarding"`, `"Checkout Flow"`)
+- **`platform`**: `auto`, `web`, `mobile_flutter`, `mobile_native`, `desktop`, `cross_platform` (default: `auto`)
+- **`wcag_level`**: Target WCAG 2.2 conformance -- `A`, `AA`, or `AAA` (default: `AA`)
+
+### What happens (full UX process)
+
+```
+Phase 0: PROJECT CONTEXT DISCOVERY
+  → Detects UI framework (React, Flutter, Vue, etc.)
+  → Inventories existing design tokens, components, layout patterns
+
+Phase 1: USER RESEARCH
+  → Creates 2-4 evidence-based personas with accessibility profiles
+  → Frames needs as Jobs-to-be-Done (functional, emotional, social)
+
+Phase 2: JOURNEY MAPPING
+  → Generates Mermaid journey diagram with emotional arc
+  → Maps complete user flow with error states and recovery paths
+
+Phase 3: INFORMATION ARCHITECTURE
+  → Produces content hierarchy as Mermaid mindmap
+
+Phase 4: WIREFRAMING
+  → Creates component-level wireframe specifications
+
+Phase 5: INTERACTION DESIGN
+  → Defines state machines for interactive components
+
+Phase 6: DESIGN SYSTEM
+  → Outputs design tokens as code (CSS variables, JSON, or Dart ThemeData)
+  → Documents spacing, color, typography, and elevation scales
+
+Phase 7: ACCESSIBILITY AUDIT
+  → Tests against WCAG 2.2 at the specified conformance level
+  → Checks color contrast, keyboard navigation, screen reader support
+
+Phase 8: DESIGN HANDOFF
+  → Produces component specs with exact measurements and states
+  → Generates responsive breakpoint documentation
+```
+
+---
+
+## 13. Advanced: Chaining Recipes
 
 For complex workflows, you can chain recipes in a shell script:
 
@@ -523,7 +586,7 @@ echo "=== All checks complete ==="
 
 ---
 
-## 13. Advanced: Team Setup with Shared Recipes
+## 14. Advanced: Team Setup with Shared Recipes
 
 ### Option A: Set `GOOSE_RECIPE_PATH` (local)
 
@@ -559,7 +622,7 @@ goose recipe deeplink ~/goose-recipes/general/code-reviewer.yaml \
 
 ---
 
-## 14. Advanced: Scheduled Recipes
+## 15. Advanced: Scheduled Recipes
 
 Run recipes on a schedule (e.g., daily security audit, weekly dependency check):
 
@@ -579,7 +642,7 @@ goose schedule add \
 
 ---
 
-## 15. Recipe Reference
+## 16. Recipe Reference
 
 ### All CLI Commands
 

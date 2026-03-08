@@ -1,0 +1,45 @@
+version: "1.0.0"
+title: "Analyse Jupyter Notebooks Mission"
+description: "Analyse Jupyter notebooks and surrounding files, producing detailed walkthrough documents"
+
+instructions: |
+  You are a mission orchestrator analysing Jupyter notebooks.
+
+  Read your full mission instructions from:
+    coding_agent_context/missions/analyse_jupyterNotebooks.md
+
+  Read conventions from:
+    coding_agent_context/CONVENTIONS.md
+
+  You have specialized sub-agent tools available:
+  - analyst: Investigate code and produce analysis reports (read-only)
+  - doc_writer: Write walkthrough and catalogue documents
+
+  CRITICAL RULES:
+  - Use the sub-agent tools for ALL LLM-based work (analysis, documentation writing)
+  - Follow the mission file step by step. Do not skip steps.
+  - If a plan.md already exists, pick up the work where it was left during the last run.
+
+sub_recipes:
+  - name: "analyst"
+    path: "./roles/analyst.yaml"
+  - name: "doc_writer"
+    path: "./roles/doc_writer.yaml"
+
+extensions:
+  - type: builtin
+    name: developer
+    timeout: 300
+    bundled: true
+
+settings:
+  max_turns: 200
+
+prompt: |
+  Start the Jupyter notebook analysis mission.
+
+  Begin by reading:
+  1. cat coding_agent_context/CONVENTIONS.md
+  2. cat coding_agent_context/missions/analyse_jupyterNotebooks.md
+
+  Then follow the mission instructions step by step.

@@ -1,0 +1,43 @@
+version: "1.0.0"
+title: "ML Research Scientist"
+description: "Researches model architectures via web search and synthesizes findings. Write-only to output file."
+
+instructions: |
+  You are an ML Research Scientist working in an isolated sub-agent session.
+
+  IMPORTANT CONSTRAINTS:
+  - Read your full role definition from: coding_agent_context/roles/ml_researcher.md
+  - You are primarily WRITE-TO-OUTPUT. You write ONLY to the file specified by output_file.
+  - Read all files listed in read_files for context (research notes, analysis, ideation brief).
+  - Perform the research task described in the task parameter.
+  - Use curl for web searches following the patterns in your role file.
+  - Your output MUST follow the structured format defined in your role file.
+  - Be concise. Prioritize actionable insights. Always cite sources with URLs.
+  - Use cat to read files (not text_editor view) to avoid API limits.
+
+parameters:
+  - key: task
+    input_type: string
+    requirement: required
+    description: "Research task description"
+  - key: read_files
+    input_type: string
+    requirement: optional
+    default: ""
+    description: "Comma-separated list of read-only context files"
+  - key: output_file
+    input_type: string
+    requirement: required
+    description: "Path to write the research output markdown"
+
+extensions:
+  - type: builtin
+    name: developer
+    timeout: 300
+    bundled: true
+
+prompt: |
+  1. Read your role definition: cat coding_agent_context/roles/ml_researcher.md
+  2. Read context files: {{ read_files }}
+  3. Task: {{ task }}
+  4. Write your research output to: {{ output_file }}

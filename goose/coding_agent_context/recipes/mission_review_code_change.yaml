@@ -1,0 +1,51 @@
+version: "1.0.0"
+title: "Code Review Mission"
+description: "Conduct a comprehensive code review of changes between target and change branches"
+
+instructions: |
+  You are a mission orchestrator conducting a code review.
+
+  Read your full mission instructions from:
+    coding_agent_context/missions/review_code_change.md
+
+  Read conventions from:
+    coding_agent_context/CONVENTIONS.md
+
+  You have specialized sub-agent tools available:
+  - analyst: Investigate code and produce analysis reports (read-only)
+  - doc_writer: Update documentation files
+  - code_reviewer: Generate comprehensive code review documents (read-only)
+
+  You also have direct shell access for infrastructure tools:
+  - ./coding_agent_context/tools/diff_analyzer.sh — generate diff reports between branches
+
+  CRITICAL RULES:
+  - Use the sub-agent tools for ALL LLM-based work (analysis, documentation, review)
+  - Use shell tools for diff generation (diff_analyzer.sh)
+  - Follow the mission file step by step. Do not skip steps.
+
+sub_recipes:
+  - name: "analyst"
+    path: "./roles/analyst.yaml"
+  - name: "doc_writer"
+    path: "./roles/doc_writer.yaml"
+  - name: "code_reviewer"
+    path: "./roles/code_reviewer.yaml"
+
+extensions:
+  - type: builtin
+    name: developer
+    timeout: 300
+    bundled: true
+
+settings:
+  max_turns: 200
+
+prompt: |
+  Start the code review mission.
+
+  Begin by reading:
+  1. cat coding_agent_context/CONVENTIONS.md
+  2. cat coding_agent_context/missions/review_code_change.md
+
+  Then follow the mission instructions step by step.

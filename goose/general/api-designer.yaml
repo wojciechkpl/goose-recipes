@@ -274,7 +274,7 @@ sub_recipes:
     description: "TDD cycle for API implementation"
 
   - name: "code_reviewer"
-    path: "./code-reviewer.yaml"
+    path: "../code-reviewer.yaml"
     description: "Review implemented API code"
 
 retry:

@@ -1,0 +1,128 @@
+version: "1.0.0"
+title: "Compile References"
+description: |
+  Discover and catalog relevant sources for a research topic.
+  Searches internal and external sources based on requirements.md configuration.
+
+instructions: |
+  You are a Reference Compiler. Discover and catalog sources for research.
+  
+  ## Process
+  
+  1. Read requirements.md from run_dir
+  2. Search internal sources (wiki, builder hub, code, sage)
+  3. Expand seed sources for additional references
+  4. Search external domains as configured
+  5. Score and rank all candidates
+  6. Generate compiled_references.md and requirements_template.md
+  
+  ## Scoring
+  
+  | Factor | Score |
+  |--------|-------|
+  | Direct topic match | +3 |
+  | Authoritative source | +2 |
+  | Recent (< 1 year) | +2 |
+  | Internal source | +1 |
+  | From seed source | +1 |
+  
+  ## Rules
+  
+  - Do NOT investigate sources deeply - just catalog them
+  - ONLY search external domains listed in requirements
+  - Do NOT use web search unless explicitly enabled
+  - CHECKPOINT progress after each search phase
+  - Always generate requirements_template.md for next mission
+
+extensions:
+  - type: builtin
+    name: developer
+    timeout: 300
+    bundled: true
+  - type: stdio
+    name: builder-mcp
+    cmd: builder-mcp
+    args: []
+    timeout: 600
+
+context:
+  - ./admin_agent_context/CONVENTIONS.md
+  - ./admin_agent_context/missions/compile_references.md
+  - ./admin_agent_context/roles/reference_compiler.md
+
+parameters:
+  - key: run_dir
+    input_type: string
+    requirement: required
+    description: "Directory containing requirements.md and for output files"
+
+prompt: |
+  Compile references for research based on requirements in: {{ run_dir }}
+  
+  ## Your Task
+  
+  1. Read {{ run_dir }}/requirements.md for:
+     - Topic and description
+     - Search topics (subtopics to search for)
+     - Search domains (internal: true/false, external list)
+     - Max references limit
+     - Seed sources (optional starting points)
+     - Exclusion patterns (optional)
+  
+  2. Create progress directory: {{ run_dir }}/progress/
+  
+  3. Search internal sources (if enabled):
+     - Use InternalSearch for wiki, builder hub, sage
+     - Use InternalCodeSearch for code repositories
+     - Checkpoint after each search type
+  
+  4. Expand seed sources (if provided):
+     - Fetch each seed source
+     - Extract outbound references
+     - Add to candidates
+  
+  5. Search external domains:
+     - Only search domains listed in requirements
+     - Do NOT use general web search unless enable_web_search: true
+  
+  6. Score and rank:
+     - Apply scoring factors
+     - Remove excluded patterns
+     - Keep top max_references
+  
+  7. Generate outputs:
+     - {{ run_dir }}/compiled_references.md (scored reference list)
+     - {{ run_dir }}/requirements_template.md (template for research_report)
+  
+  ## Requirements.md Template (if user needs to create one)
+  
+  ```yaml
+  # Reference Compilation Requirements
+  
+  topic: "Your research topic"
+  description: |
+    What you're researching and why.
+  
+  search_topics:
+    - "subtopic 1"
+    - "subtopic 2"
+  
+  search_domains:
+    internal: true
+    external:
+      - arxiv.org
+      - docs.aws.amazon.com
+    enable_web_search: false
+  
+  max_references: 20
+  
+  seed_sources:
+    - url: "https://example.com/doc"
+      note: "Starting point"
+  
+  exclude_patterns:
+    - "deprecated"
+  ```
+
+settings:
+  max_turns: 75

@@ -1,0 +1,47 @@
+version: "1.0.0"
+title: "Generate Documentation Mission"
+description: "Generate comprehensive *_Agent.md documentation files for the entire codebase from scratch"
+
+instructions: |
+  You are a mission orchestrator generating documentation for a codebase.
+
+  Read your full mission instructions from:
+    coding_agent_context/missions/generate_docs.md
+
+  Read conventions from:
+    coding_agent_context/CONVENTIONS.md
+
+  You have specialized sub-agent tools available:
+  - analyst: Investigate code and produce analysis reports (read-only)
+  - architect: Create documentation plans
+  - doc_writer: Write and update documentation files
+
+  CRITICAL RULES:
+  - Use the sub-agent tools for ALL LLM-based work (analysis, planning, writing)
+  - Follow the mission file step by step. Do not skip steps.
+
+sub_recipes:
+  - name: "analyst"
+    path: "./roles/analyst.yaml"
+  - name: "architect"
+    path: "./roles/architect.yaml"
+  - name: "doc_writer"
+    path: "./roles/doc_writer.yaml"
+
+extensions:
+  - type: builtin
+    name: developer
+    timeout: 300
+    bundled: true
+
+settings:
+  max_turns: 200
+
+prompt: |
+  Start the documentation generation mission.
+
+  Begin by reading:
+  1. cat coding_agent_context/CONVENTIONS.md
+  2. cat coding_agent_context/missions/generate_docs.md
+
+  Then follow the mission instructions step by step.

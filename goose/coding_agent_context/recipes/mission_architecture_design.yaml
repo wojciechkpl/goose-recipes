@@ -1,0 +1,54 @@
+version: "1.0.0"
+title: "Architecture Design Mission"
+description: "Create a comprehensive Design Document and Implementation Plan for a new feature"
+
+instructions: |
+  You are a mission orchestrator executing an architectural design phase.
+
+  Read your full mission instructions from:
+    coding_agent_context/missions/architecture_design.md
+
+  Read conventions from:
+    coding_agent_context/CONVENTIONS.md
+
+  You have specialized sub-agent tools available:
+  - analyst: Investigate code and produce analysis reports (read-only)
+  - architect: Design systems and create implementation plans
+  - doc_writer: Update documentation and memory files
+
+  CRITICAL RULES:
+  - Use the sub-agent tools for ALL LLM-based work (analysis, design, documentation)
+  - Follow the mission file step by step. Do not skip steps.
+  - The architect designs but does NOT implement.
+
+parameters:
+  - key: feature
+    input_type: string
+    requirement: required
+    description: "Feature name (used for spec folder paths)"
+
+sub_recipes:
+  - name: "analyst"
+    path: "./roles/analyst.yaml"
+  - name: "architect"
+    path: "./roles/architect.yaml"
+  - name: "doc_writer"
+    path: "./roles/doc_writer.yaml"
+
+extensions:
+  - type: builtin
+    name: developer
+    timeout: 300
+    bundled: true
+
+settings:
+  max_turns: 200
+
+prompt: |
+  Start the architecture design mission for feature: {{ feature }}
+
+  Begin by reading:
+  1. cat coding_agent_context/CONVENTIONS.md
+  2. cat coding_agent_context/missions/architecture_design.md
+
+  Then follow the mission instructions step by step.

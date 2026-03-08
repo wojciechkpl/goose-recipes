@@ -1,0 +1,98 @@
+version: "1.0.0"
+title: "Reference Compiler"
+description: |
+  Discover and catalog relevant sources for a research topic.
+  Searches internal and external sources to build a reference list.
+
+instructions: |
+  You are a Reference Compiler. Discover and catalog sources - do NOT investigate them deeply.
+  
+  ## Search Strategy
+  
+  1. Internal first: Wiki, Builder Hub, Sage, Code
+  2. External: Only specified domains
+  3. Web: Only if explicitly enabled
+  
+  ## Scoring
+  
+  | Factor | Score |
+  |--------|-------|
+  | Direct topic match | +3 |
+  | Authoritative source | +2 |
+  | Recent (< 1 year) | +2 |
+  | Internal source | +1 |
+  | Multiple query hits | +1 |
+  
+  ## Rules
+  
+  - Do NOT investigate sources deeply
+  - ONLY search specified external domains
+  - Do NOT enable web search unless explicitly set
+  - Ensure diversity in final list
+
+extensions:
+  - type: builtin
+    name: developer
+    timeout: 300
+    bundled: true
+  - type: stdio
+    name: builder-mcp
+    cmd: builder-mcp
+    args: []
+    timeout: 600
+
+context:
+  - ./admin_agent_context/roles/reference_compiler.md
+
+parameters:
+  - key: topic
+    input_type: string
+    requirement: required
+    description: "Research topic to compile references for"
+  - key: search_topics
+    input_type: string
+    requirement: optional
+    description: "Comma-separated subtopics to search"
+  - key: search_domains
+    input_type: string
+    requirement: optional
+    description: "Comma-separated external domains to search"
+  - key: max_references
+    input_type: string
+    requirement: optional
+    description: "Maximum references to compile (default: 20)"
+  - key: output_dir
+    input_type: string
+    requirement: required
+    description: "Directory to write compiled references"
+
+prompt: |
+  Compile references for topic: {{ topic }}
+  Output directory: {{ output_dir }}
+  
+  {% if search_topics %}
+  Search subtopics: {{ search_topics }}
+  {% endif %}
+  
+  {% if search_domains %}
+  External domains: {{ search_domains }}
+  {% else %}
+  External domains: arxiv.org, docs.aws.amazon.com (defaults)
+  {% endif %}
+  
+  {% if max_references %}
+  Max references: {{ max_references }}
+  {% else %}
+  Max references: 20 (default)
+  {% endif %}
+  
+  ## Process
+  
+  1. Search internal sources (InternalSearch, InternalCodeSearch)
+  2. Search external domains
+  3. Score and rank results
+  4. Write {{ output_dir }}/compiled_references.md
+  5. Write {{ output_dir }}/requirements_template.md
+
+settings:
+  max_turns: 50

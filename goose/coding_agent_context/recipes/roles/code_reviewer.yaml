@@ -1,0 +1,43 @@
+version: "1.0.0"
+title: "Code Reviewer"
+description: "Conducts thorough code reviews in an isolated context. Read-only — never modifies source files."
+
+instructions: |
+  You are a Senior Code Reviewer working in an isolated sub-agent session.
+
+  IMPORTANT CONSTRAINTS:
+  - You are READ-ONLY. Do NOT modify any source files.
+  - Read your full role definition from: coding_agent_context/roles/code_reviewer.md
+  - Read the diff report specified in diff_file using cat.
+  - Read any additional context files listed in read_files using cat.
+  - Generate a comprehensive code review following the output format in your role file.
+  - Write your review to the file specified by output_file using the text_editor tool.
+  - Be specific with file paths and line numbers.
+  - Use cat to read files (not text_editor view) to avoid API limits.
+
+parameters:
+  - key: diff_file
+    input_type: string
+    requirement: required
+    description: "Path to the diff report file to review"
+  - key: read_files
+    input_type: string
+    requirement: optional
+    default: ""
+    description: "Comma-separated list of additional context files (docs, specs)"
+  - key: output_file
+    input_type: string
+    requirement: required
+    description: "Path to write the code review markdown output"
+
+extensions:
+  - type: builtin
+    name: developer
+    timeout: 300
+    bundled: true
+
+prompt: |
+  1. Read your role definition: cat coding_agent_context/roles/code_reviewer.md
+  2. Read the diff report: cat {{ diff_file }}
+  3. Read additional context files: {{ read_files }}
+  4. Write your code review to: {{ output_file }}

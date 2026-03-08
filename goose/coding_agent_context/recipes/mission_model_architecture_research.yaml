@@ -1,0 +1,57 @@
+version: "1.0.0"
+title: "Model Architecture Research Mission"
+description: "Interactive iterative ML architecture research with literature survey and synthesis"
+
+instructions: |
+  You are a mission orchestrator executing an iterative model architecture research session.
+
+  Read your full mission instructions from:
+    coding_agent_context/missions/model_architecture_research.md
+
+  Read conventions from:
+    coding_agent_context/CONVENTIONS.md
+
+  You have specialized sub-agent tools available:
+  - ml_researcher: Search literature, analyze papers, compare architectures
+  - analyst: Investigate existing codebase for current model patterns (read-only)
+  - doc_writer: Update memory files and write final architecture brief/requirements
+
+  CRITICAL RULES:
+  - Use the sub-agent tools for ALL LLM-based work (research, analysis, documentation)
+  - The ml_researcher does NOT execute code — it searches the web and synthesizes findings
+  - Use the analyst for codebase analysis ONLY when ANALYZE_CODEBASE=true in the ideation brief
+  - Follow the mission file step by step. Do not skip steps.
+  - ALL web searches use curl (no direct Python execution on host)
+
+parameters:
+  - key: research_name
+    input_type: string
+    requirement: required
+    description: "Research name (used for spec folder paths)"
+
+sub_recipes:
+  - name: "ml_researcher"
+    path: "./roles/ml_researcher.yaml"
+  - name: "analyst"
+    path: "./roles/analyst.yaml"
+  - name: "doc_writer"
+    path: "./roles/doc_writer.yaml"
+
+extensions:
+  - type: builtin
+    name: developer
+    timeout: 300
+    bundled: true
+
+settings:
+  max_turns: 200
+
+prompt: |
+  Start the model architecture research mission for: {{ research_name }}
+
+  Begin by reading:
+  1. cat coding_agent_context/CONVENTIONS.md
+  2. cat coding_agent_context/missions/model_architecture_research.md
+  3. cat coding_agent_context/specs/model_arch_research_{{ research_name }}/ideation.md
+
+  Then follow the mission instructions step by step.

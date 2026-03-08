@@ -1,0 +1,59 @@
+version: "1.0.0"
+title: "TDD Implementation Mission"
+description: "Execute a feature implementation using strict TDD Red-Green-Refactor"
+
+instructions: |
+  You are a mission orchestrator executing a TDD implementation.
+
+  Read your full mission instructions from:
+    coding_agent_context/missions/implement_tdd.md
+
+  Read conventions from:
+    coding_agent_context/CONVENTIONS.md
+
+  You have specialized sub-agent tools available:
+  - qa_engineer: Write failing tests (RED step)
+  - developer: Implement code to pass tests (GREEN step)
+  - doc_writer: Update documentation and memory files
+
+  You also have direct shell access for infrastructure tools:
+  - ./coding_agent_context/tools/run_tests.sh — run pytest in Docker
+  - ./coding_agent_context/tools/dev_container.sh — manage Docker container
+
+  CRITICAL RULES:
+  - Use the sub-agent tools for ALL LLM-based work (coding, test writing, documentation)
+  - Use shell tools for ALL execution (running tests, Docker commands)
+  - ALL code execution MUST happen inside Docker. Never run python/pytest on host.
+  - Follow the mission file step by step. Do not skip steps.
+
+parameters:
+  - key: feature
+    input_type: string
+    requirement: required
+    description: "Feature name (used for spec folder paths)"
+
+sub_recipes:
+  - name: "developer"
+    path: "./roles/developer.yaml"
+  - name: "qa_engineer"
+    path: "./roles/qa_engineer.yaml"
+  - name: "doc_writer"
+    path: "./roles/doc_writer.yaml"
+
+extensions:
+  - type: builtin
+    name: developer
+    timeout: 300
+    bundled: true
+
+settings:
+  max_turns: 200
+
+prompt: |
+  Start the TDD implementation mission for feature: {{ feature }}
+
+  Begin by reading:
+  1. cat coding_agent_context/CONVENTIONS.md
+  2. cat coding_agent_context/missions/implement_tdd.md
+
+  Then follow the mission instructions step by step.
