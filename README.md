@@ -8,6 +8,7 @@ Both platforms share the same best practices and domain knowledge — only the f
 
 ```
 .
+├── setup.sh                # One-line setup for new machines
 ├── shared/                 # Cross-platform standards
 │   ├── severity-scale.md       # Shared 🔴🟠🟡🔵ℹ️ severity classification
 │   └── naming-conventions.md   # Shared naming standards
@@ -41,6 +42,25 @@ Both platforms share the same best practices and domain knowledge — only the f
 
 ## Quick Start
 
+### One-Line Setup (recommended)
+
+```bash
+git clone https://github.com/wojciechkpl/agent-recipes.git ~/agent-recipes
+cd ~/agent-recipes
+./setup.sh --all        # Installs Claude agents + configures Goose recipe path
+```
+
+The setup script supports selective installation and previewing changes:
+
+```bash
+./setup.sh --claude            # Claude agents only (user-level, all projects)
+./setup.sh --claude-project    # Claude agents for current project only (team-shareable)
+./setup.sh --goose             # Goose recipe path only
+./setup.sh --all               # Both Claude + Goose
+./setup.sh --dry-run --all     # Preview without making changes
+./setup.sh --uninstall         # Remove everything
+```
+
 ### Goose (Block)
 ```bash
 # Install Goose
@@ -63,8 +83,11 @@ goose run --recipe goose/general/ai-researcher.yaml
 See [goose/TUTORIAL.md](goose/TUTORIAL.md) for 15 detailed use-case walkthroughs.
 
 ### Claude Code (Anthropic)
+
+Agents are installed automatically by `./setup.sh --claude`. For manual installation:
+
 ```bash
-# Install agents (project-level — recommended for teams)
+# Project-level (recommended for teams)
 mkdir -p .claude/agents/languages .claude/agents/specialized .claude/agents/subrecipes
 cp claude/agents/*.md .claude/agents/
 cp claude/agents/languages/*.md .claude/agents/languages/
@@ -77,14 +100,13 @@ cp claude/agents/*.md ~/.claude/agents/
 cp claude/agents/languages/*.md ~/.claude/agents/languages/
 cp claude/agents/specialized/*.md ~/.claude/agents/specialized/
 cp claude/agents/subrecipes/*.md ~/.claude/agents/subrecipes/
+```
 
-# Agents activate automatically — just describe your task
+Agents activate automatically — just describe your task:
+```
 claude
-> Review the auth module for security issues
-# → Delegates to security-auditor agent
-
-> Debug the failing test in user_service
-# → Delegates to debugger agent
+> Review the auth module for security issues   # → delegates to security-auditor
+> Debug the failing test in user_service        # → delegates to debugger
 ```
 
 See [claude/README.md](claude/README.md) for full installation and usage details.

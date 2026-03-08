@@ -1,0 +1,263 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ──────────────────────────────────────────────────────────────
+# Agent Recipes — Setup Script
+# Installs Claude Code agents and/or Goose recipes on a new machine.
+# ──────────────────────────────────────────────────────────────
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Colors (disabled when not a terminal)
+if [[ -t 1 ]]; then
+    BOLD='\033[1m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[0;33m'
+    CYAN='\033[0;36m'
+    RED='\033[0;31m'
+    RESET='\033[0m'
+else
+    BOLD='' GREEN='' YELLOW='' CYAN='' RED='' RESET=''
+fi
+
+info()  { printf "${CYAN}[info]${RESET}  %s\n" "$*"; }
+ok()    { printf "${GREEN}[ok]${RESET}    %s\n" "$*"; }
+warn()  { printf "${YELLOW}[warn]${RESET}  %s\n" "$*"; }
+err()   { printf "${RED}[error]${RESET} %s\n" "$*" >&2; }
+
+usage() {
+    cat <<EOF
+${BOLD}Agent Recipes Setup${RESET}
+
+Usage: ./setup.sh [OPTIONS]
+
+Options:
+  --claude            Install Claude Code agents (user-level)
+  --claude-project    Install Claude Code agents (project-level, into .claude/)
+  --goose             Configure Goose recipe path in shell profile
+  --all               Install everything (Claude user-level + Goose)
+  --dry-run           Show what would be done without making changes
+  --uninstall         Remove installed agents and configuration
+  -h, --help          Show this help
+
+Examples:
+  ./setup.sh --all              # Full setup for both platforms
+  ./setup.sh --claude           # Claude agents only (available in all projects)
+  ./setup.sh --claude-project   # Claude agents for current project only
+  ./setup.sh --goose            # Goose recipe path only
+  ./setup.sh --uninstall        # Remove everything
+
+EOF
+}
+
+# ── Defaults ──────────────────────────────────────────────────
+INSTALL_CLAUDE=false
+INSTALL_CLAUDE_PROJECT=false
+INSTALL_GOOSE=false
+DRY_RUN=false
+UNINSTALL=false
+
+# ── Parse args ────────────────────────────────────────────────
+if [[ $# -eq 0 ]]; then
+    usage
+    exit 0
+fi
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --claude)          INSTALL_CLAUDE=true ;;
+        --claude-project)  INSTALL_CLAUDE_PROJECT=true ;;
+        --goose)           INSTALL_GOOSE=true ;;
+        --all)             INSTALL_CLAUDE=true; INSTALL_GOOSE=true ;;
+        --dry-run)         DRY_RUN=true ;;
+        --uninstall)       UNINSTALL=true ;;
+        -h|--help)         usage; exit 0 ;;
+        *)                 err "Unknown option: $1"; usage; exit 1 ;;
+    esac
+    shift
+done
+
+# ── Helpers ───────────────────────────────────────────────────
+copy_agents() {
+    local dest="$1"
+    local src="${SCRIPT_DIR}/claude/agents"
+
+    if [[ ! -d "$src" ]]; then
+        err "Source directory not found: $src"
+        exit 1
+    fi
+
+    local dirs=("$dest" "$dest/languages" "$dest/specialized" "$dest/subrecipes")
+    for d in "${dirs[@]}"; do
+        if $DRY_RUN; then
+            info "[dry-run] mkdir -p $d"
+        else
+            mkdir -p "$d"
+        fi
+    done
+
+    local count=0
+    local pairs=(
+        "$src/*.md:$dest/"
+        "$src/languages/*.md:$dest/languages/"
+        "$src/specialized/*.md:$dest/specialized/"
+        "$src/subrecipes/*.md:$dest/subrecipes/"
+    )
+
+    for pair in "${pairs[@]}"; do
+        local pattern="${pair%%:*}"
+        local target="${pair##*:}"
+        # shellcheck disable=SC2086
+        for f in $pattern; do
+            [[ -f "$f" ]] || continue
+            if $DRY_RUN; then
+                info "[dry-run] cp $f -> $target"
+            else
+                cp "$f" "$target"
+            fi
+            count=$((count + 1))
+        done
+    done
+
+    ok "Copied $count agent files to $dest"
+}
+
+remove_agents() {
+    local dest="$1"
+    if [[ -d "$dest" ]]; then
+        if $DRY_RUN; then
+            info "[dry-run] rm -rf $dest"
+        else
+            rm -rf "$dest"
+        fi
+        ok "Removed $dest"
+    else
+        info "Nothing to remove at $dest"
+    fi
+}
+
+detect_shell_profile() {
+    local shell_name
+    shell_name="$(basename "${SHELL:-/bin/bash}")"
+    case "$shell_name" in
+        zsh)  echo "${HOME}/.zshrc" ;;
+        bash)
+            if [[ -f "${HOME}/.bash_profile" ]]; then
+                echo "${HOME}/.bash_profile"
+            else
+                echo "${HOME}/.bashrc"
+            fi
+            ;;
+        fish) echo "${HOME}/.config/fish/config.fish" ;;
+        *)    echo "${HOME}/.profile" ;;
+    esac
+}
+
+GOOSE_MARKER="# agent-recipes: goose config"
+
+add_goose_config() {
+    local profile
+    profile="$(detect_shell_profile)"
+    local recipe_path="${SCRIPT_DIR}/goose/general"
+    local shell_name
+    shell_name="$(basename "${SHELL:-/bin/bash}")"
+
+    if [[ ! -d "$recipe_path" ]]; then
+        err "Goose recipes not found at: $recipe_path"
+        exit 1
+    fi
+
+    if grep -qF "$GOOSE_MARKER" "$profile" 2>/dev/null; then
+        warn "Goose config already present in $profile — skipping"
+        return
+    fi
+
+    local config_block
+    if [[ "$shell_name" == "fish" ]]; then
+        config_block="
+$GOOSE_MARKER
+set -gx GOOSE_RECIPE_PATH \"${recipe_path}\""
+    else
+        config_block="
+$GOOSE_MARKER
+export GOOSE_RECIPE_PATH=\"${recipe_path}\""
+    fi
+
+    if $DRY_RUN; then
+        info "[dry-run] Would append to $profile:"
+        printf '%s\n' "$config_block"
+    else
+        printf '%s\n' "$config_block" >> "$profile"
+    fi
+
+    ok "Added GOOSE_RECIPE_PATH to $profile"
+    info "Run 'source $profile' or open a new terminal to activate"
+}
+
+remove_goose_config() {
+    local profile
+    profile="$(detect_shell_profile)"
+
+    if ! grep -qF "$GOOSE_MARKER" "$profile" 2>/dev/null; then
+        info "No Goose config found in $profile"
+        return
+    fi
+
+    if $DRY_RUN; then
+        info "[dry-run] Would remove Goose config block from $profile"
+    else
+        # Remove the marker line and the export/set line after it
+        local tmp="${profile}.agent-recipes-bak"
+        cp "$profile" "$tmp"
+        grep -v "$GOOSE_MARKER" "$tmp" | grep -v 'GOOSE_RECIPE_PATH' > "$profile"
+        rm -f "$tmp"
+    fi
+
+    ok "Removed Goose config from $profile"
+}
+
+# ── Uninstall ─────────────────────────────────────────────────
+if $UNINSTALL; then
+    printf "\n${BOLD}Uninstalling agent recipes...${RESET}\n\n"
+
+    remove_agents "${HOME}/.claude/agents"
+    remove_agents ".claude/agents"
+    remove_goose_config
+
+    printf "\n${GREEN}${BOLD}Uninstall complete.${RESET}\n"
+    exit 0
+fi
+
+# ── Install ───────────────────────────────────────────────────
+printf "\n${BOLD}Setting up agent recipes...${RESET}\n\n"
+
+if $INSTALL_CLAUDE; then
+    info "Installing Claude Code agents (user-level -> ~/.claude/agents/)"
+    copy_agents "${HOME}/.claude/agents"
+    printf "\n"
+fi
+
+if $INSTALL_CLAUDE_PROJECT; then
+    info "Installing Claude Code agents (project-level -> .claude/agents/)"
+    copy_agents ".claude/agents"
+    printf "\n"
+fi
+
+if $INSTALL_GOOSE; then
+    info "Configuring Goose recipe path"
+    add_goose_config
+    printf "\n"
+fi
+
+# ── Summary ───────────────────────────────────────────────────
+printf "${GREEN}${BOLD}Setup complete!${RESET}\n\n"
+
+if $INSTALL_CLAUDE || $INSTALL_CLAUDE_PROJECT; then
+    printf "  ${BOLD}Claude Code:${RESET} Agents are ready. Start claude and describe your task.\n"
+    printf "  List agents:  ${CYAN}/agents${RESET}  or  ${CYAN}claude agents${RESET}\n\n"
+fi
+
+if $INSTALL_GOOSE; then
+    printf "  ${BOLD}Goose:${RESET} Run recipes with:\n"
+    printf "  ${CYAN}goose run --recipe goose/general/code-reviewer.yaml${RESET}\n\n"
+fi
