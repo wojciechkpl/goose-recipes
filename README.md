@@ -1,8 +1,8 @@
 # AI Agent Recipes
 
-A curated collection of AI agent configurations for **Goose** (by Block) and **Claude Code** (by Anthropic). Each agent enforces best practices, TDD, and language-specific conventions.
+A curated collection of AI agent configurations for **Claude Code** (by Anthropic), **Kiro** (by AWS), and **Goose** (by Block). Each agent enforces best practices, TDD, and language-specific conventions.
 
-Both platforms share the same best practices and domain knowledge — only the format differs: YAML for Goose, Markdown for Claude Code.
+All three platforms share the same best practices and domain knowledge — only the format differs: Markdown for Claude Code, JSON for Kiro, YAML for Goose.
 
 ## Repository Structure
 
@@ -34,6 +34,15 @@ Both platforms share the same best practices and domain knowledge — only the f
 │       ├── languages/*.md      # 5 language experts
 │       ├── specialized/*.md    # 2 specialized agents
 │       └── subrecipes/*.md     # 6 shared subrecipes
+│
+├── kiro/                   # Kiro agents (JSON)
+│   ├── README.md               # Kiro-specific documentation
+│   ├── setup-kiro.sh           # Installation script
+│   └── agents/
+│       ├── *.json              # 8 core agents
+│       ├── languages/*.json    # 5 language experts
+│       ├── specialized/*.json  # 2 specialized agents
+│       └── subrecipes/*.json   # 6 shared subrecipes
 │
 └── README.md               # This file
 ```
