@@ -2,7 +2,7 @@
 name: postgresql-expert
 description: "Deep PostgreSQL specialist for schema design, query optimization, migrations, indexing, partitioning, RLS, and monitoring. Use for any database work."
 tools: Read, Write, Edit, Bash, Grep, Glob
-model: inherit
+model: sonnet
 memory: user
 ---
 

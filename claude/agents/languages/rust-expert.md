@@ -2,7 +2,7 @@
 name: rust-expert
 description: "Deep Rust specialist for ownership, lifetimes, error handling, async (tokio), performance, and idiomatic patterns. Use for any Rust work."
 tools: Read, Write, Edit, Bash, Grep, Glob
-model: inherit
+model: sonnet
 memory: user
 ---
 

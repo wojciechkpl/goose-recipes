@@ -2,7 +2,7 @@
 name: bash-expert
 description: "Deep Bash/Shell specialist for robust scripts, CI/CD pipelines, automation, and system administration. Enforces defensive scripting patterns. Use for any shell scripting work."
 tools: Read, Write, Edit, Bash, Grep, Glob
-model: inherit
+model: haiku
 memory: user
 ---
 

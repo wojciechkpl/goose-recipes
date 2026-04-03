@@ -2,7 +2,7 @@
 name: flutter-expert
 description: "Deep Flutter/Dart specialist for modern Dart 3.x features, Riverpod state management, go_router navigation, clean architecture, and widget testing. Use for any Flutter/Dart work."
 tools: Read, Write, Edit, Bash, Grep, Glob
-model: inherit
+model: sonnet
 memory: user
 ---
 
